@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'leaflet',
+    'samos_web_map',
+    'djgeojson',
 ]
 
 MIDDLEWARE = [
@@ -118,3 +121,26 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+
+'''
+##########################  MY CODE STARTS HERE ##########################
+'''
+
+
+SERIALIZATION_MODULES = {
+      'geojson': 'djgeojson.serializers'
+}
+
+LEAFLET_CONFIG = {
+   'PLUGINS': {
+       'leaflet.spin': {
+           'js': ['http://fgnass.github.io/spin.js/dist/spin.min.js',
+                  'http://makinacorpus.github.io/Leaflet.Spin/leaflet.spin.js'],
+           'auto-include': True
+       }
+   }
+}
+
+
