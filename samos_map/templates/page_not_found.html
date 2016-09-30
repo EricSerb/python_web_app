@@ -1,0 +1,46 @@
+<!--
+ I USED THIS CODEPEN FOR THE 404 PAGE
+https://codepen.io/pukidepa/pen/Eemrw
+-->
+<!DOCTYPE HTML>
+
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/page_not_found.css') }}">
+</head>
+
+<body>
+
+
+<div class="container">
+  <div class="wave"></div>
+  <div class="drop">
+    <div class="tail"></div>
+    <div class="head"></div>
+  </div>
+  <div class="boat">
+    <div class="front"></div>
+    <div class="middle">
+      <div class="swash"></div>
+      <div class="swash"></div>
+      <div class="swash"></div>
+    </div>
+    <div class="back"></div>
+    <div class="cabin">
+      <div class="hublot"></div>
+    </div>
+  </div>
+</div>
+<div class="fish">
+  <div class="head"></div>
+  <div class="body"></div>
+  <div class="tail"></div>
+  <div class="eye"></div>
+</div>
+
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/page_not_found.js') }}"></script>
+</body>
+</html>
+
