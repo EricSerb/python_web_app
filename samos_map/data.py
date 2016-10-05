@@ -28,6 +28,7 @@ class handler(object):
         pass
     
     def _exec(self, qry):
+        sys.stderr.write('qry: {}'.format(qry))
         self.solr.SearchHandler(self.solr, '/select')(qry)
 
     def spatial_query(self, lats, lons):
