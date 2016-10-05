@@ -26,7 +26,10 @@ class handler(object):
         '''
         '''
         pass
-     
+    
+    def _exec(self, qry):
+        self.solr.SearchHandler(self.solr, '/select')(qry)
+
     def spatial_query(self, lats, lons):
         '''
         Handles the execution of querying the solr endpoint with a 
@@ -36,7 +39,9 @@ class handler(object):
             assert -180 < x <= 180 and -90 < y <= 90, "Spatial parameters out of bounds:" \
                 " -180 < x <= 180 and -90 < y <= 90"
         bbox = [lats, lons].flatten()
-        qry = '{}/select?q={}'
+        qry = '{}/select?q=*:*&fq=bounding_box:[{},{} TO {},{}]'
+        return self._exec(qry.format(self.endpoint,
+            *lats, *lons))
 
 def test_spatial():
     handle = handler()
