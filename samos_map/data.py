@@ -11,8 +11,13 @@ to populate a web map on their end.
 import os
 import sys
 import time
-import urllib
 import json
+import codecs
+
+if sys.version_info[0] > 2:
+    import urllib.request as urllib
+elif sys.version_info[0] < 3:
+    import urllib
 
 try:
     scilibs_available = True
@@ -102,9 +107,17 @@ class handler(object):
         items = 100
         
         qry_url = self.load_query(items=items, start=start, box=box)
-        response = urllib.urlopen(qry_url)
-        data = json.loads(response.read())
-        return data
+        
+        if sys.version_info[0] < 3:
+            response = urllib.urlopen(qry_url)
+            data = json.loads(response.read())
+            return data
+        elif sys.version_info[0] > 2:
+            reader = codecs.getreader('utf-8')
+            response = urllib.urlopen(qry_url)
+            data = json.load(reader(response))
+            return data
+        
         ## BELOW IS DEPRACATED RIGHT NOW BUT LEFT FOR FUTURE REFERENCE
         # for x, y in zip(lats, lons):
             # assert -180 < x <= 180 and -90 < y <= 90, "Spatial parameters out of bounds:" \
