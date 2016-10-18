@@ -1,0 +1,72 @@
+import argparse
+import data
+import sys
+import pprint
+
+
+# def test_spatial():
+    # handle = data.handler()
+    # handle.spatial_query((10.0, 11.0), (20.5, 22.6))
+    # assert True
+
+def test_qry_loader(show=False):
+    '''
+    Tests query construction.
+    '''
+    
+    handle = data.handler()
+    
+    # TEST 1
+    qs = handle.load_query(items=None, start=None, box=None)
+    try:
+        assert qs == data.EDGE_ENDPOINT
+    except AssertionError as e:
+        sys.stderr.write('\nQuery construction 1 failure: ' + qs \
+            + '\nExpected: {}\n\n'.format(data.EDGE_ENDPOINT))
+        raise e
+    if show:
+        pprint.pprint(qs)
+    
+    # TEST 2
+    qs = handle.load_query(items=10, start=10, box='-45,15,-30,30')
+    try:
+        for sub in \
+            'itemsPerPage=10&startIndex=10&bbox=-45,15,-30,30'.split('&'):
+            assert sub in qs
+    except AssertionError as e:
+        sys.stderr.write('\nQuery construction 2 failure: ' + qs \
+            + '\nExpected: {}?itemsPerPage=10&startIndex=10' \
+            '&bbox=-45,15,-30,30\n\n'.format(data.EDGE_ENDPOINT))
+        raise e
+    if show:
+        pprint.pprint(qs)
+
+
+def test_qry_executor(show=False):
+    handle = data.handler()
+    lats = [15, 30]
+    lons = [-45, -30]
+    res = handle.spatial_query(lats, lons)
+    assert res is not None # Consider beefing this test assertion up
+    if show:
+        pprint.pprint(res)
+    return res # for use below
+
+
+def test_extraction(show=False):
+    dat = test_qry_executor(show)
+
+
+if __name__ == '__main__':
+    '''
+    Pass in the following args / flags:
+    -v  --verbose   :  show test results
+    '''
+    p = argparse.ArgumentParser()
+    p.add_argument('-v', '--verbose', action='store_true', \
+        help='show test results')
+    args = p.parse_args()
+    
+    test_qry_loader(args.verbose)
+    test_extraction(args.verbose) # this will call qry_exec
+    
