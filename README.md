@@ -17,16 +17,16 @@
 * NOTE: libraries must correspond to the correct version of python you use!
 * NOTE: if you have trouble installing shapely, here is what I have done on my CentOS7 machine:
     ```shell
-    sudo su -
-    cd /path/to/downloads
-    wget [http://download.osgeo.org/geos/geos-3.5.0.tar.bz2](http://download.osgeo.org/geos/)
-    tar xvf geos-3.5.0.tar.bz2
-    cd geos-3.5.0
-    ./configure --prefix=/usr/local
-    make && make install -j2
-    export `LD_LIBRARY_PATH=/path/to/configure/prefix/lib:$LD_LIBRARY_PATH`
-    # NOTE: `/path/to/configure/prefix` is the path used by `configure` to install geos ^^^
-    # NOTE: Setting this variable is considered bad practice and it will not persist across shells.
+    sudo su -  
+    cd /path/to/downloads  
+    wget [http://download.osgeo.org/geos/geos-3.5.0.tar.bz2](http://download.osgeo.org/geos/)  
+    tar xvf geos-3.5.0.tar.bz2  
+    cd geos-3.5.0  
+    ./configure --prefix=/usr/local  
+    make && make install -j2  
+    export `LD_LIBRARY_PATH=/path/to/configure/prefix/lib:$LD_LIBRARY_PATH`  
+    # NOTE: `/path/to/configure/prefix` is the path used by `configure` to install geos ^^^  
+    # NOTE: Setting this variable is considered bad practice and it will not persist across shells.  
     # NOTE: For a better solution see [this stack post](http://stackoverflow.com/questions/1099981/why-cant-python-find-shared-objects-that-are-in-directories-in-sys-path/1100297#1100297)
     ```
 
@@ -34,8 +34,8 @@
 ### Running
 * Initialize the enviornment (note for windows, use `set` instead of `export`):
     ```shell
-    export FLASK_APP=main.py
-    cd /path/to/python_web_app/samos_map
+    export FLASK_APP=main.py  
+    cd /path/to/python_web_app/samos_map  
     flask run &
     ```
 * The default port for flask is 5000. Change this by passing `-p {port}` when calling `flask run` 
