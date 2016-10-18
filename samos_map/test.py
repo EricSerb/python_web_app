@@ -65,7 +65,7 @@ def test_extraction(show=False):
     handle = data.handler()
     res = test_qry_executor(show)
     kd = handle.get_kd(res)
-    if show:
+    if show and kd is not None:
         print(kd.data)
 
 
