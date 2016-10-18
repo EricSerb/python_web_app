@@ -1,8 +1,8 @@
 # Map Visualization of Large Data in Python :alien:
 
-> CIS5930 - Python Programming at Florida State University.
-> Adam Stallard and Eric Serbousek
-> Fall 2016
+#### CIS5930 - Python Programming at Florida State University.
+#### Adam Stallard and Eric Serbousek
+#### Fall 2016
 
 
 ## Requirements
