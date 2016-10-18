@@ -1,5 +1,4 @@
 # Map Visualization of Large Data in Python :alien:
-======
 
 > CIS5930 - Python Programming at Florida State University.
 > Adam Stallard and Eric Serbousek
@@ -47,4 +46,21 @@ flask run &
 * Open your browser and go to `http://localhost:5000/`
 * Any additional proxy will route to a 404 page. Ex: `http://localhost:5000/kshdfkhasd`
 
-### About
+## About
+
+
+## TO-DO
+* [x] Add requirements to README
+* [x] Add setup / run to README
+* [] Add information about datasets to README
+* [] Add info about openstreetmaps to README
+* [] Add info about EDGE / DOMS / SAMOS to README
+* [] Relay client zoom state (bounding box) to server
+* [] Cluster data extracted from the KDTree
+* [] Compress clustered data for smaller server->client packet sizes
+* [] Decompress data on client side (via JS?)
+* [] Distinguish clusters on client side (JS?)
+* [] Populate map on client side (JS?)
+* [] Add diagrams so people know what the hell we are talking about :joy:
+* [] Have a drink
+
