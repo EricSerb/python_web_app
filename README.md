@@ -22,7 +22,7 @@
 ```shell
 sudo su -  
 cd /path/to/downloads  
-wget [http://download.osgeo.org/geos/geos-3.5.0.tar.bz2](http://download.osgeo.org/geos/)  
+wget http://download.osgeo.org/geos/geos-3.5.0.tar.bz2  
 tar xvf geos-3.5.0.tar.bz2  
 cd geos-3.5.0  
 ./configure --prefix=/usr/local  
