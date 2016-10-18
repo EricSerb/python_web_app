@@ -1,11 +1,14 @@
 '''
 Entry point for a minimal flas application from here.
 '''
-
+import sys
 from flask import Flask, render_template, request
 app = Flask(__name__)
 
-#import sys, data
+try:
+    import data
+except ImportError:
+    pass # for now
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

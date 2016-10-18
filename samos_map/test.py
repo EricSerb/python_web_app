@@ -1,13 +1,21 @@
+'''
+Testing suite for the samos map project.
+Currenlty contains tests for the data module to ensure
+data traffic is handled appropriatly.
+
+All libvraries here are std libs. If any functions require
+3rd party libs in the other modules, they are checked 
+in that module that the libraries exist. If they do not, 
+a warning msg will print, but no error will be thrown. 
+
+Instead it will turn the function into a no-op.
+'''
+
 import argparse
 import data
 import sys
 import pprint
 
-
-# def test_spatial():
-    # handle = data.handler()
-    # handle.spatial_query((10.0, 11.0), (20.5, 22.6))
-    # assert True
 
 def test_qry_loader(show=False):
     '''
@@ -54,7 +62,11 @@ def test_qry_executor(show=False):
 
 
 def test_extraction(show=False):
-    dat = test_qry_executor(show)
+    handle = data.handler()
+    res = test_qry_executor(show)
+    kd = handle.get_kd(res)
+    if show:
+        print(kd.data)
 
 
 if __name__ == '__main__':

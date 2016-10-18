@@ -11,14 +11,26 @@ to populate a web map on their end.
 import os
 import sys
 import time
-# import requests
 import urllib
 import json
+
+try:
+    scilibs_available = True
+    import numpy as np
+    from scipy.spatial import cKDTree
+    import shapely.wkt as wkt
+except ImportError:
+    scilibs_available = False
+    sys.stderr.write('Warning: Missing scientific libraries.\n' \
+        'Please make sure scipy and shapely are installed.\n')
+    pass
+
+## DEPRACTAED LIBS .. FOR NOW
+# import requests
 # import solr
 
-
-SOLR_PORT = 8983
-SOLR_ENDPOINT = 'http://localhost:{}/solr/samos'.format(SOLR_PORT)
+# SOLR_PORT = 8983
+# SOLR_ENDPOINT = 'http://localhost:{}/solr/samos'.format(SOLR_PORT)
 
 EDGE_ENDPOINT = 'http://doms.coaps.fsu.edu/ws/search/samos'
 
@@ -28,8 +40,9 @@ class handler(object):
     Simple handler for now. This will likely be broken down 
     into individual components as more code is added.
     '''
-    global SOLR_ENDPOINT
-    def __init__(self, endpoint=SOLR_ENDPOINT, edge=EDGE_ENDPOINT):
+    # global SOLR_ENDPOINT
+    # def __init__(self, endpoint=SOLR_ENDPOINT):
+    def __init__(self, edge=EDGE_ENDPOINT):
         '''
         Loading 2 endpoints for now, because were not sure which one
         will be used.
@@ -37,13 +50,14 @@ class handler(object):
         # trying out multiple data sources
         # solr is localhost only 
         # edge is accessible anywhere
-        self.endpoint = endpoint
+        # self.endpoint = endpoint
         self.edge = edge
         self.edge_params = { 'itemsPerPage' : None, \
             'startIndex' : None, \
             'bbox' : None
         }
         # self.edge_tail = '?itemsPerPage={items}&startIndex={start}&bbox={box}'
+        
         
         # try:
             # self.solr = solr.Solr(self.endpoint)
@@ -99,6 +113,23 @@ class handler(object):
         # qry = '{}/select?q=*:*&fq=bounding_box:[{},{} TO {},{}]'
         # return self._exec(qry.format(self.endpoint,
             # lats[0], lats[1], lons[0], lons[1]))
-
+    
+    def get_kd(self, response):
+        '''
+        Given an EDGE response, this will construct a KD tree 
+        with that data.
+        '''
+        global scilibs_available
+        if not scilibs_available:
+            sys.stderr.write('Warning: data.handler.load_kd() ' \
+            'could not be ran because of missing dependency.\n')
+            return
+        # coords = np.
+        n = response['itemsPerPage']
+        arr = np.empty((n, 2), dtype=np.float32)
+        for i, doc in enumerate(response['results']):
+            p = wkt.loads(doc['point'])
+            arr[i,:] = p.x, p.y
+        return cKDTree(arr)
 
 
