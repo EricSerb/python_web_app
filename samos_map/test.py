@@ -26,12 +26,9 @@ def test_qry_loader(show=False):
     
     # TEST 1
     qs = handle.load_query(items=None, start=None, box=None)
-    try:
-        assert qs == data.EDGE_ENDPOINT
-    except AssertionError as e:
-        sys.stderr.write('\nQuery construction 1 failure: ' + qs \
-            + '\nExpected: {}\n\n'.format(data.EDGE_ENDPOINT))
-        raise e
+    assert qs == data.EDGE_ENDPOINT, 'Query construction failure: {}' \
+            '\nExpected: {}'.format(qs, data.EDGE_ENDPOINT)
+
     if show:
         pprint.pprint(qs)
     

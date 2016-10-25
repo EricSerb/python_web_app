@@ -53,10 +53,6 @@ class handler(object):
         Loading 2 endpoints for now, because were not sure which one
         will be used.
         '''
-        # trying out multiple data sources
-        # solr is localhost only 
-        # edge is accessible anywhere
-        # self.endpoint = endpoint
         self.edge = edge
         self.edge_params = { 'itemsPerPage' : None, \
                              'startIndex' : None, \
@@ -69,10 +65,8 @@ class handler(object):
         Loads parameters from dictionary with query values
         and returns a url string that will be used to retrieve data.
         '''
-        self.edge_params['itemsPerPage'] = 0
-        # self.edge_params['itemsPerPage'] = items
-        self.edge_params['startIndex'] = 0
-        # self.edge_params['startIndex'] = start
+        self.edge_params['itemsPerPage'] = items
+        self.edge_params['startIndex'] = start
         self.edge_params['bbox'] = box
 
         tail = '&'.join('{}={}'.format(k, self.edge_params[k]) \
@@ -113,15 +107,6 @@ class handler(object):
             url = self.load_query(items=chunk, start=start, box=box)
             start += chunk
             yield self.exec_query(url)
-
-        ## BELOW IS DEPRACATED RIGHT NOW BUT LEFT FOR FUTURE REFERENCE
-        # for x, y in zip(lats, lons):
-        # assert -180 < x <= 180 and -90 < y <= 90, "Spatial parameters out of bounds:" \
-        # " -180 < x <= 180 and -90 < y <= 90"
-        # bbox = [lats, lons].flatten()
-        # qry = '{}/select?q=*:*&fq=bounding_box:[{},{} TO {},{}]'
-        # return self._exec(qry.format(self.endpoint,
-        # lats[0], lats[1], lons[0], lons[1]))
 
     def get_cnt(self, box):
         url = self.load_query(items=0, start=0, box=box)
