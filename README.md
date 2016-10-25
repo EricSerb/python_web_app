@@ -64,3 +64,8 @@ flask run &
 - [ ] Add diagrams so people know what the hell we are talking about :joy:
 - [ ] Have a drink
 
+
+##References for AJAX<->Flask
+http://code.runnable.com/UiPhLHanceFYAAAP/how-to-perform-ajax-in-flask-for-python
+
+http://www.giantflyingsaucer.com/blog/?p=4310
