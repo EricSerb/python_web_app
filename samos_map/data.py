@@ -11,8 +11,9 @@ to populate a web map on their end.
 import os
 import sys
 import time
-import urllib
+from urllib import request
 import json
+import codecs
 
 try:
     scilibs_available = True
@@ -102,8 +103,9 @@ class handler(object):
         items = 100
         
         qry_url = self.load_query(items=items, start=start, box=box)
-        response = urllib.urlopen(qry_url)
-        data = json.loads(response.read())
+        response = request.urlopen(qry_url)
+        reader = codecs.getreader("utf-8")
+        data = json.load(reader(response))
         return data
         ## BELOW IS DEPRACATED RIGHT NOW BUT LEFT FOR FUTURE REFERENCE
         # for x, y in zip(lats, lons):
