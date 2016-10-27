@@ -47,17 +47,17 @@ flask run &
 * Any additional proxy will route to a 404 page. Ex: `http://localhost:5000/kshdfkhasd`
 
 ## About
-##### DOMS
+### DOMS
 See [Distributed Oceanographic Matchup Service](https://doms.jpl.nasa.gov/)
-##### EDGE
+### EDGE
 See [The Extensible Data Gateway Environment](https://github.com/dataplumber/edge)
-##### Solr
+### Solr
 See [Apache - Lucene - Solr](https://doms.jpl.nasa.gov/)
-##### SAMOS
+### SAMOS
 See [Shipboard Automated Meteorological and Oceanographic System](http://samos.coaps.fsu.edu/html/)
-##### ICOADS
+### ICOADS
 See [Internation Comprehensive Ocean-Atmosphere Data Set](http://icoads.noaa.gov/)
-##### SPURS
+### SPURS
 See [Salinity Processes in the Upper Ocean Regional Study](http://spurs.jpl.nasa.gov/)
 
 DOMS is a separate project that aims to provide a central interface to request matched data from a distribution of sources. The match happens on time AND space. This project is currently in development between FSU (tallahassee, FL), JPL (Pasadena, California), and NCAR (Boulder, Colorado). Each of these endpoints have an instance of Apache Solr loaded with very large oceanographic-atmoshperic data sets. EDGE acts as a proxy or communication tool between the central node at JPL, and all distributed nodes. The endpoints are public access and provide a means of extracting data via RESTful URL query strings that are relayed to Solr on the local host. The response from Solr is then relayed back to the user in a simplified JSON format.
