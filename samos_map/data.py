@@ -9,29 +9,29 @@ to populate a web map on their end.
 '''
 
 import os
+import re
 import sys
 import time
-from urllib import request
 import json
 import codecs
+from math import ceil
+from collections import Iterable, namedtuple as ntuple
+
+if sys.version_info[0] > 2:
+    import urllib.request as urllib
+elif sys.version_info[0] < 3:
+    import urllib
 
 try:
     scilibs_available = True
     import numpy as np
     from scipy.spatial import cKDTree
-    import shapely.wkt as wkt
 except ImportError:
     scilibs_available = False
     sys.stderr.write('Warning: Missing scientific libraries.\n' \
         'Please make sure scipy and shapely are installed.\n')
     pass
 
-## DEPRACTAED LIBS .. FOR NOW
-# import requests
-# import solr
-
-# SOLR_PORT = 8983
-# SOLR_ENDPOINT = 'http://localhost:{}/solr/samos'.format(SOLR_PORT)
 
 EDGE_ENDPOINT = 'http://doms.coaps.fsu.edu/ws/search/samos'
 
@@ -41,40 +41,25 @@ class handler(object):
     Simple handler for now. This will likely be broken down 
     into individual components as more code is added.
     '''
-    # global SOLR_ENDPOINT
-    # def __init__(self, endpoint=SOLR_ENDPOINT):
-    def __init__(self, edge=EDGE_ENDPOINT):
+    def __init__(self, edge=EDGE_ENDPOINT, keys=None):
         '''
         Loading 2 endpoints for now, because were not sure which one
         will be used.
         '''
-        # trying out multiple data sources
-        # solr is localhost only 
-        # edge is accessible anywhere
-        # self.endpoint = endpoint
         self.edge = edge
         self.edge_params = { 'itemsPerPage' : None, \
-            'startIndex' : None, \
-            'bbox' : None
-        }
-        # self.edge_tail = '?itemsPerPage={items}&startIndex={start}&bbox={box}'
+                             'startIndex' : None, \
+                             'bbox' : None
+                             }
+        self.wktreg = re.compile(r'(\d+(?:\.\d*)?)')
         
+        self.datakeys = keys or ('point', 'time')
+        assert isinstance(self.datakeys, Iterable)
         
-        # try:
-            # self.solr = solr.Solr(self.endpoint)
-        # except (KeyboardInterrupt, SystemExit) as e:
-            # raise e
-        # except Exception as e:
-            # sys.stderr.write('Error with Solr connection')
-            # raise e
-    
-    
-    # def _exec(self, qry):
-        # sys.stderr.write('qry: {}'.format(qry))
-        # self.solr.SearchHandler(self.solr, '/select')(qry)
-    
-    
-    def load_query(self, items=None, start=None, box=None):
+        self.pack = ntuple('pack', ' '.join(self.datakeys))
+
+
+    def config(self, items=None, start=None, box=None):
         '''
         Loads parameters from dictionary with query values
         and returns a url string that will be used to retrieve data.
@@ -82,56 +67,87 @@ class handler(object):
         self.edge_params['itemsPerPage'] = items
         self.edge_params['startIndex'] = start
         self.edge_params['bbox'] = box
-        
+
         tail = '&'.join('{}={}'.format(k, self.edge_params[k]) \
-            for k in self.edge_params if self.edge_params[k] is not None)
-        
+                        for k in self.edge_params if self.edge_params[k] is not None)
+
         if tail:
             qry_str = '?'.join((self.edge, tail))
         else:
             qry_str = self.edge
-        
+
         return qry_str
-    
-    def spatial_query(self, lats, lons):
+
+
+    def query(self, url):
+        if sys.version_info[0] < 3:
+            response = urllib.urlopen(url)
+            data = json.loads(response.read())
+            return data
+        elif sys.version_info[0] > 2:
+            reader = codecs.getreader('utf-8')
+            response = urllib.urlopen(url)
+            data = json.load(reader(response))
+            return data
+
+
+    def loadpoint(self, s):
         '''
-        Handles the execution of querying the solr endpoint with a 
+        My own simple version of shaoply.wkt.loads() so we don't require
+        shapely libraries.
+        '''
+        assert isinstance(s, (str, unicode, bytearray))
+        assert s.lower().startswith('point(')
+        
+        nums = map(float, re.findall(self.wktreg, s))
+        return tuple(iter(nums))
+
+
+    def spatial(self, lats, lons, limit=5000, chunk=1000):
+        '''
+        Handles the execution of querying the solr endpoint with a
         bounding box representing lat/lon ranges.
         '''
+        assert isinstance(limit, int)
+        assert isinstance(chunk, int)
+        
         box = '{},{},{},{}'.format(lons[0], lats[0], lons[1], lats[1])
         start = 0
-        items = 100
+        cnt = self.count(box)
         
-        qry_url = self.load_query(items=items, start=start, box=box)
-        response = request.urlopen(qry_url)
-        reader = codecs.getreader("utf-8")
-        data = json.load(reader(response))
-        return data
-        ## BELOW IS DEPRACATED RIGHT NOW BUT LEFT FOR FUTURE REFERENCE
-        # for x, y in zip(lats, lons):
-            # assert -180 < x <= 180 and -90 < y <= 90, "Spatial parameters out of bounds:" \
-                # " -180 < x <= 180 and -90 < y <= 90"
-        # bbox = [lats, lons].flatten()
-        # qry = '{}/select?q=*:*&fq=bounding_box:[{},{} TO {},{}]'
-        # return self._exec(qry.format(self.endpoint,
-            # lats[0], lats[1], lons[0], lons[1]))
-    
-    def get_kd(self, response):
+        n = ceil(cnt / chunk)
+        loops = int(min(n, ceil(limit / chunk)) if limit else n)
+        
+        for _ in range(loops):
+            url = self.config(items=chunk, start=start, box=box)
+            start += chunk
+            yield self.query(url)
+
+
+    def count(self, box):
+        url = self.config(items=0, start=0, box=box)
+        page = self.query(url)
+        return page['totalResults']
+
+
+    def extract(self, responses):
         '''
         Given an EDGE response, this will construct a KD tree 
         with that data.
         '''
         global scilibs_available
-        if not scilibs_available:
-            sys.stderr.write('Warning: data.handler.load_kd() ' \
-            'could not be ran because of missing dependency.\n')
-            return
-        # coords = np.
-        n = response['itemsPerPage']
+        assert scilibs_available, 'Warning: data.handler.load_kd() ' \
+                             'could not be ran because of missing dependency.'
+        
+        for chunk in responses:
+            for res in chunk['results']:
+                yield self.pack(**{k : res[k] for k in self.datakeys})
+
+    def kd(self, packs):
+        points, times = zip(*[(self.loadpoint(d.point), d.time) \
+            for d in packs])
+        n = len(points)
         arr = np.empty((n, 2), dtype=np.float32)
-        for i, doc in enumerate(response['results']):
-            p = wkt.loads(doc['point'])
-            arr[i,:] = p.x, p.y
+        for i, p in enumerate(points):
+            arr[i,:] = p[0], p[1]
         return cKDTree(arr)
-
-
