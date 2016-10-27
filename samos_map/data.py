@@ -51,11 +51,13 @@ class handler(object):
                              'startIndex' : None, \
                              'bbox' : None
                              }
+        # using this as replacement for shapely.wkt (an annoying dependency)
         self.wktreg = re.compile(r'(\d+(?:\.\d*)?)')
         
         self.datakeys = keys or ('point', 'time')
         assert isinstance(self.datakeys, Iterable)
         
+        # simple way to structure a datum obj
         self.pack = ntuple('pack', ' '.join(self.datakeys))
 
 
@@ -64,22 +66,24 @@ class handler(object):
         Loads parameters from dictionary with query values
         and returns a url string that will be used to retrieve data.
         '''
+        # get params
         self.edge_params['itemsPerPage'] = items
         self.edge_params['startIndex'] = start
         self.edge_params['bbox'] = box
-
+        
+        # build restuful url qry string 
         tail = '&'.join('{}={}'.format(k, self.edge_params[k]) \
                         for k in self.edge_params if self.edge_params[k] is not None)
-
-        if tail:
-            qry_str = '?'.join((self.edge, tail))
-        else:
-            qry_str = self.edge
-
-        return qry_str
+        
+        # if no params return base, otherwise the built qry string
+        return '?'.join((self.edge, tail)) if tail else self.edge
 
 
     def query(self, url):
+        '''
+        Uses web libraries (urllib, requests, codecs) to run qry url
+        and return json data.
+        '''
         if sys.version_info[0] < 3:
             response = urllib.urlopen(url)
             data = json.loads(response.read())
@@ -93,7 +97,7 @@ class handler(object):
 
     def loadpoint(self, s):
         '''
-        My own simple version of shaoply.wkt.loads() so we don't require
+        Simple version of shaoply.wkt.loads() so we don't require
         shapely libraries.
         '''
         assert isinstance(s, (str, unicode, bytearray))
@@ -125,6 +129,11 @@ class handler(object):
 
 
     def count(self, box):
+        '''
+        We can get a total count from edge without extracting any data.
+        Simply set items=0, make the request, and look for 'totalResults'
+        in the JSON response.
+        '''
         url = self.config(items=0, start=0, box=box)
         page = self.query(url)
         return page['totalResults']
@@ -144,6 +153,10 @@ class handler(object):
                 yield self.pack(**{k : res[k] for k in self.datakeys})
 
     def kd(self, packs):
+        '''
+        Given an iterable of Pack (namedtuple) items, walk over them
+        and pull out data. (For now were just concerned with points)
+        '''
         points, times = zip(*[(self.loadpoint(d.point), d.time) \
             for d in packs])
         n = len(points)
