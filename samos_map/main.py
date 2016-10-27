@@ -15,8 +15,9 @@ def index():
     #data.test_spatial()
 
     #Request the bbox returned via ajax and then get data we need for this
-    data_pts = data.spatial_query([request.form('latitude1'), request.form(
-        'latitude2')], [request.form('longitude1'), request.form('longitude2')])
+    N, S, E, W = 'latitude1', 'latitude2', 'longitude1', 'longitude2'
+    data_pts = data.spatial_query([request.form(i) for i in (N, S, E, W)])
+    
     return render_template('index.html')
 
 
