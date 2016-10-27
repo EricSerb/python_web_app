@@ -13,10 +13,11 @@ except ImportError:
 @app.route('/', methods=['GET', 'POST'])
 def index():
     #data.test_spatial()
-
+    
+    handle = data.handler()
     #Request the bbox returned via ajax and then get data we need for this
     N, S, E, W = 'latitude1', 'latitude2', 'longitude1', 'longitude2'
-    data_pts = data.spatial_query([request.form(i) for i in (N, S, E, W)])
+    data_pts = handle.spatial_query([request.form(i) for i in (N, S, E, W)])
     
     return render_template('index.html')
 
