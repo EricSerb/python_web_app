@@ -14,6 +14,7 @@ import sys
 import time
 import json
 import codecs
+from datetime import datetime
 from math import ceil
 from collections import Iterable, namedtuple as ntuple
 
@@ -49,7 +50,9 @@ class handler(object):
         self.edge = edge
         self.edge_params = { 'itemsPerPage' : None, \
                              'startIndex' : None, \
-                             'bbox' : None
+                             'bbox' : None, \
+                             'startTime' : '2014-10-31T00:00:00Z', \
+                             'endTime' : datetime.now().isoformat() + 'Z', \
                              }
         # using this as replacement for shapely.wkt (an annoying dependency)
         self.wktreg = re.compile(r'(\d+(?:\.\d*)?)')
@@ -59,7 +62,8 @@ class handler(object):
         
         # simple way to structure a datum obj
         self.pack = ntuple('pack', ' '.join(self.datakeys))
-
+        self.last = None
+        self.last_cnt = None
 
     def config(self, items=None, start=None, box=None):
         '''
@@ -84,6 +88,7 @@ class handler(object):
         Uses web libraries (urllib, requests, codecs) to run qry url
         and return json data.
         '''
+        self.last = url
         if sys.version_info[0] < 3:
             response = urllib.urlopen(url)
             data = json.loads(response.read())
@@ -122,7 +127,7 @@ class handler(object):
         n = ceil(cnt / chunk)
         loops = int(min(n, ceil(limit / chunk)) if limit else n)
         
-        for _ in range(loops):
+        for _ in range(loops + 1):
             url = self.config(items=chunk, start=start, box=box)
             start += chunk
             yield self.query(url)
@@ -136,7 +141,8 @@ class handler(object):
         '''
         url = self.config(items=0, start=0, box=box)
         page = self.query(url)
-        return page['totalResults']
+        self.last_cnt = page['totalResults']
+        return self.last_cnt
 
 
     def extract(self, responses):

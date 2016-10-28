@@ -23,6 +23,17 @@ def index():
     handle = data.handler()
     #Request the bbox returned via ajax and then get data we need for this
     
+    # HARD CODING A TEST CASE FOR SPATIAL QUERY!
+    c = 0
+    lons, lats = [-45,-30], [15,30]
+    packed_pnts = handle.extract(handle.spatial(lats, lons, limit=0))
+    # for i in packed_pnts:
+        # print(i)
+        # c += 1
+    # print(handle.last)
+    # print(c)
+    print(handle.last_cnt)
+    
     # try:
         # print(dir(request.form))
         # print(list(request.form.keys()))
