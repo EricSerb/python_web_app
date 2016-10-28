@@ -2,13 +2,14 @@
 Entry point for a minimal flas application from here.
 '''
 import sys
+import data
 from flask import Flask, render_template, request
+
+
 app = Flask(__name__)
 
-try:
-    import data
-except ImportError:
-    pass # for now
+
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -21,9 +22,21 @@ def index():
     
     handle = data.handler()
     #Request the bbox returned via ajax and then get data we need for this
-    N, S, E, W = 'latitude1', 'latitude2', 'longitude1', 'longitude2'
-    data_pts = handle.spatial_query([request.form(i) for i in (N, S, E, W)])
     
+    # try:
+        # print(dir(request.form))
+        # print(list(request.form.keys()))
+        # print(list(request.form.lists()))
+        # print(request.form)
+        # N, S, E, W = 'latitude1', 'latitude2', 'longitude1', 'longitude2'
+        # data_pts = handle.spatial([request.form[i] for i in (N, S, E, W)])
+    # except (SystemExit, KeyboardInterrupt) as e:
+        # raise e
+    # except Exception as e:
+        # print(str(e))
+        # sys.exit()
+        
+
     # need to figure out how to confiugre html here
     
     # also, should we limit the number of "transactions" from the user?
@@ -43,3 +56,8 @@ def unittest():
     with app.test_request_context('/', method='POST'):
         assert request.path == '/'
         assert request.method == 'POST'
+
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
