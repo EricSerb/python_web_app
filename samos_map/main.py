@@ -12,6 +12,8 @@ from base64 import b64encode
 from os import urandom
 
 app = Flask(__name__)
+app.config['DEBUG'] = True
+
 # conn = sql.connect('example.db')
 # cur = conn.cursor()
 # try:
