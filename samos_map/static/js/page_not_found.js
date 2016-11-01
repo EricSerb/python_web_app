@@ -1,3 +1,5 @@
+$(document).ready(function(){
+
 for(i=0; i<100; i++) {
   $('.container').append('<div class="wave"></div>');
 }
@@ -35,3 +37,5 @@ $('.fish').each( function() {
   $(this).css('top', (Math.random() * 30) + 70 + '%' );
 });
 
+
+});
