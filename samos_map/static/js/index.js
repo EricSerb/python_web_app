@@ -14,7 +14,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 function getPins(e) {
     bounds = map.getBounds();
-//    url = "/data" +
     url = "/map/data" +
         '?S=' + bounds.getSouthWest().lat +
         '&W=' + bounds.getSouthWest().lng +

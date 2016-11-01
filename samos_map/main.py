@@ -7,12 +7,13 @@ if __name__ == '__main__':
     import data
 else:
     from . import data
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 from base64 import b64encode
 from os import urandom
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
+app.secret_key = os.urandom(32)
 
 # conn = sql.connect('example.db')
 # cur = conn.cursor()
@@ -44,7 +45,9 @@ def dat():
     stuff
     '''
     global conn
-    print('HI')
+    print('TESTING /data:')
+    if 'id' in session:
+        print('GOT SESSION ID: {}'.format(session['id']))
 
     def lookup(user):
         response = cur.execute('''
@@ -105,6 +108,13 @@ def index():
     using flasks request library (handles the web stuff).
     We execute the data query, and use it to render a response.
     '''
+    print('TESTING /:')
+    if 'id' in session:
+        print('GOT SESSION ID: {}'.format(session['id']))
+    else:
+        session['id'] = os.urandom(8)
+        print('Set a new session ID to {}'.format(session['id']))
+
     return render_template('index.html')
 
 
