@@ -1,7 +1,7 @@
 '''
 Entry point for a minimal flas application from here.
 '''
-import sqlite3 as sql
+# import sqlite3 as sql
 import sys
 if __name__ == '__main__':
     import data
@@ -12,14 +12,14 @@ from base64 import b64encode
 from os import urandom
 
 app = Flask(__name__)
-conn = sql.connect('example.db')
-cur = conn.cursor()
-try:
-    cur.execute('''CREATE TABLE Users
-         (id)''')
-    conn.commit()
-except sql.OperationalError as e:
-    pass
+# conn = sql.connect('example.db')
+# cur = conn.cursor()
+# try:
+#     cur.execute('''CREATE TABLE Users
+#          (id)''')
+#     conn.commit()
+# except sql.OperationalError as e:
+#     pass
 
 
 def convlon360(l_360):
@@ -78,7 +78,8 @@ def dat():
     user_id = request.cookies.get('YourSessionCookie')
     print('user_id:', user_id)
     if user_id:
-        user = lookup(user_id)
+        # user = lookup(user_id)
+        user = False
         if user:
             print('User {} found'.format(user))
             pass
