@@ -35,17 +35,35 @@
   <div id="map"></div>
   <script src="//cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
   <script>
-    var map = L.map('map').setView([24.35, -80.06], 4);
+    var map = L.map('map').setView([30.0, -40.0], 3);
     var markerLayerGroup = L.layerGroup().addTo(map);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 16,
       attribution: 'Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
     }).addTo(map);
+
     function getPins(e){
       bounds = map.getBounds();
+
       url = "parks/within?lat1=" + bounds.getSouthWest().lat + "&lon1=" + bounds.getSouthWest().lng + "&lat2=" + bounds.getNorthEast().lat + "&lon2=" + bounds.getNorthEast().lng;
-      $.get(url, pinTheMap, "json")
+      url2 = "/data?S=" + bounds.getSouthWest().lat + "&W=" + bounds.getSouthWest().lng + "&N=" + bounds.getNorthEast().lat + "&E=" + bounds.getNorthEast().lng;
+
+      <!--$.ajax({-->
+        <!--type: "PUT",-->
+        <!--url: "/data",-->
+        <!--data: JSON.stringify({"S":bounds.getSouthWest().lat, "W":bounds.getSouthWest().lng, "N":bounds.getNorthEast().lat, "E":bounds.getNorthEast().lng}, null, '\t'),-->
+        <!--contentType: 'application/json;charset=UTF-8',-->
+        <!--success: function()-->
+        <!--{-->
+          <!--alert("success!");-->
+        <!--}-->
+      <!--});-->
+      console.log("ITSHAPPENING");
+
+      <!--$.get(url, pinTheMap, "json");-->
+      $.get(url2, pinTheMap2, "json");
     }
+
     function pinTheMap(data){
       //clear the current pins
       map.removeLayer(markerLayerGroup);
@@ -53,12 +71,37 @@
       //add the new pins
       var markerArray = new Array(data.length)
       for (var i = 0; i < data.length; i++){
+        if (i < 10){
+          console.log(data[i]);
+        }
         park = data[i];
         markerArray[i] = L.marker([park.lat, park.lon]).bindPopup(park.name);
       }
  
       markerLayerGroup = L.layerGroup(markerArray).addTo(map);
     }
+
+    function pinTheMap2(data){
+      //clear the current pins
+      map.removeLayer(markerLayerGroup);
+
+      //add the new pins
+      var markerArray = new Array(data['points'].length);
+      console.log("HELLO");
+      console.log(data);
+      for (var i = 0; i < data['points'].length; i++){
+        if (i < 10){
+          console.log(data['points'][i])
+        }
+        point = data['points'][i];
+        markerArray[i] = L.marker([point.lat, point.lon]).bindPopup("hey");
+        <!--console.log(point);-->
+      }
+      markerLayerGroup = L.layerGroup(markerArray).addTo(map);
+      console.log("DONE");
+    }
+
+
     map.on('dragend', getPins);
     map.on('zoomend', getPins);
     map.whenReady(getPins)

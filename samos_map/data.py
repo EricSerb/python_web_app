@@ -11,13 +11,14 @@ to populate a web map on their end.
 import os
 import re
 import sys
+from sys import stderr as err
 import time
 import json
 import codecs
 from datetime import datetime
+from urllib.error import HTTPError as Httperr
 from math import ceil
 from collections import Iterable, namedtuple as ntuple
-
 if sys.version_info[0] > 2:
     import urllib.request as urllib
 elif sys.version_info[0] < 3:
@@ -39,7 +40,7 @@ EDGE_ENDPOINT = 'http://doms.coaps.fsu.edu/ws/search/samos'
 
 class handler(object):
     '''
-    Simple handler for now. This will likely be broken down 
+    Simple handler for now. This will likely be broken down
     into individual components as more code is added.
     '''
     def __init__(self, edge=EDGE_ENDPOINT, keys=None):
@@ -51,15 +52,15 @@ class handler(object):
         self.edge_params = { 'itemsPerPage' : None, \
                              'startIndex' : None, \
                              'bbox' : None, \
-                             'startTime' : '2014-10-31T00:00:00Z', \
+                             'startTime' : '2016-01-01T00:00:00Z', \
                              'endTime' : datetime.now().isoformat() + 'Z', \
                              }
         # using this as replacement for shapely.wkt (an annoying dependency)
         self.wktreg = re.compile(r'(\d+(?:\.\d*)?)')
-        
+
         self.datakeys = keys or ('point', 'time')
         assert isinstance(self.datakeys, Iterable)
-        
+
         # simple way to structure a datum obj
         self.pack = ntuple('pack', ' '.join(self.datakeys))
         self.last = None
@@ -74,11 +75,11 @@ class handler(object):
         self.edge_params['itemsPerPage'] = items
         self.edge_params['startIndex'] = start
         self.edge_params['bbox'] = box
-        
-        # build restuful url qry string 
+
+        # build restuful url qry string
         tail = '&'.join('{}={}'.format(k, self.edge_params[k]) \
                         for k in self.edge_params if self.edge_params[k] is not None)
-        
+
         # if no params return base, otherwise the built qry string
         return '?'.join((self.edge, tail)) if tail else self.edge
 
@@ -89,27 +90,30 @@ class handler(object):
         and return json data.
         '''
         self.last = url
-        if sys.version_info[0] < 3:
-            response = urllib.urlopen(url)
-            data = json.loads(response.read())
-            return data
-        elif sys.version_info[0] > 2:
-            reader = codecs.getreader('utf-8')
-            response = urllib.urlopen(url)
-            data = json.load(reader(response))
-            return data
-
+        try:
+            if sys.version_info[0] < 3:
+                response = urllib.urlopen(url)
+                data = json.loads(response.read())
+                return data
+            elif sys.version_info[0] > 2:
+                reader = codecs.getreader('utf-8')
+                response = urllib.urlopen(url)
+                data = json.load(reader(response))
+                return data
+        except Httperr as e:
+            err.write('Bad response.')
+            print(str(e))
 
     def loadpoint(self, s):
         '''
         Simple version of shaoply.wkt.loads() so we don't require
         shapely libraries.
         '''
-        assert isinstance(s, (str, unicode, bytearray))
-        assert s.lower().startswith('point(')
-        
+        # assert isinstance(s, (str, bytearray))
+        # assert s.lower().startswith('point(')
+
         nums = map(float, re.findall(self.wktreg, s))
-        return tuple(iter(nums))
+        return reversed(tuple(iter(nums)))
 
 
     def spatial(self, lats, lons, limit=5000, chunk=1000):
@@ -119,18 +123,24 @@ class handler(object):
         '''
         assert isinstance(limit, int)
         assert isinstance(chunk, int)
-        
+
+        chunk = min(int(limit / 4), chunk)
+
         box = '{},{},{},{}'.format(lons[0], lats[0], lons[1], lats[1])
         start = 0
         cnt = self.count(box)
-        
+        if cnt < 0:
+            err.write('Warning: Count -1\n')
+            cnt = 0
         n = ceil(cnt / chunk)
         loops = int(min(n, ceil(limit / chunk)) if limit else n)
-        
+
         for _ in range(loops + 1):
             url = self.config(items=chunk, start=start, box=box)
             start += chunk
             yield self.query(url)
+            if start > limit:
+                break
 
 
     def count(self, box):
@@ -140,8 +150,13 @@ class handler(object):
         in the JSON response.
         '''
         url = self.config(items=0, start=0, box=box)
+        print(url)
         page = self.query(url)
-        self.last_cnt = page['totalResults']
+        if not page:
+            err.write('Page did not load. : {}'.format(os.path.basename(url)))
+            self.last_cnt = -1
+        else:
+            self.last_cnt = page['totalResults']
         return self.last_cnt
 
 
