@@ -27,18 +27,17 @@ app.secret_key = os.urandom(32)
 
 
 def convlon360(l_360):
+    old = l_360
     print(l_360)
     l_360 %= 360
-    return (l_360 - 360) if (l_360 > 180) else l_360
+    res = (l_360 - 360) if (l_360 > 180) else l_360
+
+    print('TESTING CONVLON360: {} -> {}'.format(old, res))
+
+    return res
 
 def convlon180(l_180):
-
     return (l_180 + 360) if (l_180 <= 0) else l_180
-
-def gencookie():
-    random_bytes = urandom(64)
-    return b64encode(random_bytes)
-
 
 @app.route('/data', methods=['GET'])
 def dat():
@@ -50,15 +49,6 @@ def dat():
     if 'id' in session:
         print('GOT SESSION ID: {}'.format(session['id']))
 
-    def lookup(user):
-        response = cur.execute('''
-        SELECT * FROM Users
-        WHERE Users.id == {}
-        '''.format(user))
-        print('~~~~~~~~~~~~~response:', response)
-        sys.stdin.readline()
-        # conn.commit()
-        return True
 
     def request_call():
         handle = data.handler()
@@ -71,8 +61,6 @@ def dat():
 
         print('LATS: {}\nLONS: {}'.format(lats, lons))
 
-
-
         data_pnts = handle.spatial(lats, lons, limit=100)
         packed_pnts = handle.extract(data_pnts)
         pnts = []
@@ -81,24 +69,6 @@ def dat():
             pnts.append({'lat': lat, 'lon': lon})
         return pnts
 
-    user_id = request.cookies.get('YourSessionCookie')
-    print('user_id:', user_id)
-    if user_id:
-        # user = lookup(user_id)
-        user = False
-        if user:
-            print('User {} found'.format(user))
-            pass
-    #
-    # else:
-    #     try:
-    #         request.set_cookie
-
-            # if time
-    # print(pnts)
-    # pnts = [{'lat':lat, 'lon':lon} for lat, lon in zip(
-    #     (10.0, 10.0,  -20.0, 0.0,   0.0,    0.0,    0.0,    0.0,   0.0),
-    #     (50.0, -15.0, -15.0, -89.0, -90.0, -179.0, -180.0, -181.0, 178.0))]
     pnts = request_call()
     return jsonify(points=pnts)
 
