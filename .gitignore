@@ -4,3 +4,5 @@
 samos_map/*.pyc
 samos_map/__pycache__
 samos_map/__pycache__/*
+.idea/
+example.db
