@@ -2,6 +2,7 @@
 Entry point for a minimal flas application from here.
 '''
 # import sqlite3 as sql
+import os
 import sys
 if __name__ == '__main__':
     import data
