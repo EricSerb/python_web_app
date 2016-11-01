@@ -1,3 +1,6 @@
+$('document').ready(function() {
+
+
 var map = L.map('map').setView([30.0, -40.0], 3);
 
 var markerLayerGroup = L.layerGroup().addTo(map);
@@ -46,3 +49,5 @@ function pinTheMap(data) {
 map.on('dragend', getPins);
 map.on('zoomend', getPins);
 map.whenReady(getPins)
+
+});
