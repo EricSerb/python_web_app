@@ -16,12 +16,12 @@ import time
 import json
 import codecs
 from datetime import datetime
-from urllib.error import HTTPError as Httperr
 from math import ceil
 from collections import Iterable, namedtuple as ntuple
 if sys.version_info[0] > 2:
     import urllib.request as urllib
 elif sys.version_info[0] < 3:
+    from urllib.error import HTTPError as Httperr
     import urllib
 
 try:
