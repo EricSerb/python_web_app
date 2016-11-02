@@ -56,7 +56,7 @@ class handler(object):
                              'endTime' : datetime.now().isoformat() + 'Z', \
                              }
         # using this as replacement for shapely.wkt (an annoying dependency)
-        self.wktreg = re.compile(r'(\d+(?:\.\d*)?)')
+        self.wktreg = re.compile(r'[-+]?\d*\.\d+|\d+')
 
         self.datakeys = keys or ('point', 'time')
         assert isinstance(self.datakeys, Iterable)
