@@ -1,29 +1,20 @@
 '''
 Entry point for a minimal flas application from here.
 '''
-# import sqlite3 as sql
 import os
 import sys
-if __name__ == '__main__':
-    import data
-else:
-    from . import data
-from flask import Flask, render_template, request, jsonify, session
+# import data
 from base64 import b64encode
-from os import urandom
+from flask import Flask, render_template, request, jsonify, session
+import kd
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.secret_key = os.urandom(32)
 
-# conn = sql.connect('example.db')
-# cur = conn.cursor()
-# try:
-#     cur.execute('''CREATE TABLE Users
-#          (id)''')
-#     conn.commit()
-# except sql.OperationalError as e:
-#     pass
+# handle = data.handler()
+# handle.loadkd()
+data = kd.Container()
 
 
 def convlon360(l_360):
@@ -44,33 +35,25 @@ def dat():
     '''
     stuff
     '''
-    global conn
-    print('TESTING /data:')
     if 'id' in session:
         print('GOT SESSION ID: {}'.format(session['id']))
 
+    def pins(bounds):
+        lats = (bounds['S'], bounds['N'])
+        lons = tuple(map(convlon360, (bounds['W'], bounds['E'])))
+        idx = data.bbox(lats, lons, k=10)
+        return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i)}
+            for d, i in zip(data.tree.data[idx], idx)])
 
-    def request_call():
-        handle = data.handler()
-        lats, lons = ((request.args['S'], request.args['N']),
-                      (request.args['W'], request.args['E']))
-        print('request.args[W]: ' + str(request.args['W']))
+    def ancillary(idx):
+        return jsonify({key : str(data.data[key][idx])
+            for key in ('meta', 'time')})
 
-        print('LATS: {}\nLONS: {}'.format(lats, lons))
-        lons = tuple(convlon360(float(l)) for l in lons)
-
-        print('LATS: {}\nLONS: {}'.format(lats, lons))
-
-        data_pnts = handle.spatial(lats, lons, limit=100)
-        packed_pnts = handle.extract(data_pnts)
-        pnts = []
-        for p in packed_pnts:
-            lat, lon = handle.loadpoint(p.point)
-            pnts.append({'lat': lat, 'lon': lon})
-        return pnts
-
-    pnts = request_call()
-    return jsonify(points=pnts)
+    if 'idx' in request.args:
+        return ancillary(int(request.args['idx']))
+    else:
+        return pins({card : float(request.args[card])
+            for card in ('S', 'N', 'W', 'E')})
 
 @app.route('/', methods=['GET'])
 def index():

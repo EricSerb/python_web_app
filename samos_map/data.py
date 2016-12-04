@@ -185,3 +185,6 @@ class handler(object):
         for i, p in enumerate(points):
             arr[i,:] = p[0], p[1]
         return cKDTree(arr)
+    
+    def loadkd(self):
+       pass 
