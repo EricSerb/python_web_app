@@ -55,30 +55,16 @@ function pinTheMap(data) {
         });
 
     }
-    
+
     map.addLayer(clusterArray);
-    // markerLayerGroup = L.layerGroup(markerArray).addTo(map);
-    
-    
-    clusterArray.on('click', function (a) {
-        console.log('clustArray ' + a.layer);
-    });
-
-    clusterArray.on('clusterclick', function (a) {
-        // a.layer is actually a cluster
-        console.log('cluster ' + a.layer.getAllChildMarkers().length);
-    });
-    
-    
-    markerLayerGroup = L.layerGroup(markerArray).addTo(map);
-
+    // markerLayerGroup = L.layerGroup(markerArray).addTo(map); 
 
     clusterArray.on('click', function(a) {
-        console.log('marker' + a.layer);
+        console.log('clusterArray click' + a.layer);
     });
 
     clusterArray.on('clusterclick', function (a){
-        console.log('cluster' + .layer.getAllChildMarkers().length);
+        console.log('ckusterArray clusterclick' + .layer.getAllChildMarkers().length);
     });
 }
 
