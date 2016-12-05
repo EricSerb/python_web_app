@@ -5,4 +5,6 @@ samos_map/*.pyc
 samos_map/__pycache__
 samos_map/__pycache__/*
 .idea/
+samos_map/deprecated
+samos_map/deprecated/*
 example.db

@@ -32,7 +32,7 @@ function getPins(e) {
 
 function pinTheMap(data) {
     //clear the current pins
-    map.removeLayer(markerLayerGroup);
+    // map.removeLayer(markerLayerGroup);
 
     //add the new pins
     var markerArray = new Array(data['points'].length);

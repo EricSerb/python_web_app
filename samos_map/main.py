@@ -3,32 +3,26 @@ Entry point for a minimal flas application from here.
 '''
 import os
 import sys
-# import data
 from base64 import b64encode
 from flask import Flask, render_template, request, jsonify, session
 import kd
+import logging
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.secret_key = os.urandom(32)
 
-# handle = data.handler()
-# handle.loadkd()
 data = kd.Container()
+log = logging.getLogger('server.log')
+log.setLevel(logging.INFO)
+fmt = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
+log.setFormatter(fmt)
+
 
 
 def convlon360(l_360):
-    old = l_360
-    print(l_360)
     l_360 %= 360
-    res = (l_360 - 360) if (l_360 > 180) else l_360
-
-    print('TESTING CONVLON360: {} -> {}'.format(old, res))
-
-    return res
-
-def convlon180(l_180):
-    return (l_180 + 360) if (l_180 <= 0) else l_180
+    return (l_360 - 360) if (l_360 > 180) else l_360
 
 @app.route('/data', methods=['GET'])
 def dat():
@@ -36,12 +30,12 @@ def dat():
     stuff
     '''
     if 'id' in session:
-        print('GOT SESSION ID: {}'.format(session['id']))
+        log.info('user {} active.'.format(session['id']))
 
     def pins(bounds):
         lats = (bounds['S'], bounds['N'])
         lons = tuple(map(convlon360, (bounds['W'], bounds['E'])))
-        idx = data.bbox(lats, lons, k=10)
+        idx = data.bbox(lats, lons, k=1000)
         return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i)}
             for d, i in zip(data.tree.data[idx], idx)])
 
@@ -62,13 +56,11 @@ def index():
     using flasks request library (handles the web stuff).
     We execute the data query, and use it to render a response.
     '''
-    print('TESTING /:')
     if 'id' in session:
-        print('GOT SESSION ID: {}'.format(session['id']))
+        log.info('user {} opended map.'.format(session['id']))
     else:
         session['id'] = os.urandom(8)
-        print('Set a new session ID to {}'.format(session['id']))
-
+        log.info('New session ID {}.'.format(session['id']))
     return render_template('index.html')
 
 
