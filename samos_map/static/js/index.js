@@ -64,7 +64,7 @@ function pinTheMap(data) {
     });
 
     clusterArray.on('clusterclick', function (a){
-        console.log('ckusterArray clusterclick' + .layer.getAllChildMarkers().length);
+        console.log('ckusterArray clusterclick' + a.layer.getAllChildMarkers().length);
     });
 }
 
