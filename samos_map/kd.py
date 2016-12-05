@@ -1,6 +1,5 @@
 import solr
 import re
-import sys
 from functools import reduce
 from operator import or_
 from time import time
@@ -8,7 +7,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 # this is a monkey patch I used from solrpy/issues/27
-#  it stops next_batch() from overwriting fields 
+#  it stops next_batch() from overwriting fields
 #  and returning all fields after the first call
 old_call = solr.core.SearchHandler.__call__
 def new_call(self, q=None, fields=None, *args, **params):
