@@ -16,7 +16,9 @@ data = kd.Container()
 log = logging.getLogger('server.log')
 log.setLevel(logging.INFO)
 fmt = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
-log.setFormatter(fmt)
+fh = logging.FileHandler('server.log')
+fh.setFormatter(fmt)
+log.addHandler(fh)
 
 
 

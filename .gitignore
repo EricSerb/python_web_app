@@ -7,4 +7,6 @@ samos_map/__pycache__/*
 .idea/
 samos_map/deprecated
 samos_map/deprecated/*
+*.log
+samos_map/*.log
 example.db
