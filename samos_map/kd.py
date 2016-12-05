@@ -40,14 +40,14 @@ class Container(object):
 
     def _load(self):
         fields = ['time', 'loc', 'meta']
-        res = self.api.select(q='*:*', fields=fields, rows=10)
+        res = self.api.select(q='*:*', fields=fields, rows=1000)
         curr, size = 0, res.numFound
         self.data = { key : np.zeros(shape=(size,), dtype=object)
             for key in ('time', 'meta') }
         self.data['loc'] = np.zeros(shape=(size, 2), dtype=np.float32)
 
         while res:
-            if curr > 30: break
+            if curr > 1000000: break
             for i, doc in enumerate(res, curr):
                 self._add(doc, i)
             res, curr = res.next_batch(), i + 1
