@@ -35,11 +35,21 @@ function pinTheMap(data) {
     // map.removeLayer(markerLayerGroup);
 
     //add the new pins
+    var clustArray = L.markerClusterGroup({
+        iconCreateFunction: function(cluster) {
+            return L.divIcon({ html: '<b>' 
+                + cluster.getChildCount() + '</b>' });
+        }
+    });
+    
     var markerArray = new Array(data['points'].length);
-
     for (var i = 0; i < data['points'].length; i++) {
         point = data['points'][i];
         markerArray[i] = L.marker([point.lat, point.lon]).bindPopup(point.idx);
+        
+        // _ = 0
+        clustArray.addLayer(markerArray[i]);
+        
         console.log(markerArray[i]);
         markerArray[i].on('click',
             function(e, feature) {
@@ -47,7 +57,21 @@ function pinTheMap(data) {
         });
         
     }
-    markerLayerGroup = L.layerGroup(markerArray).addTo(map);
+    map.addLayer(clustArray);
+    // markerLayerGroup = L.layerGroup(markerArray).addTo(map);
+    
+    
+    clustArray.on('click', function (a) {
+        console.log('clustArray ' + a.layer);
+    });
+
+    clustArray.on('clusterclick', function (a) {
+        // a.layer is actually a cluster
+        console.log('cluster ' + a.layer.getAllChildMarkers().length);
+    });
+    
+    
+
 }
 
 function ancillaryData(popup) {
