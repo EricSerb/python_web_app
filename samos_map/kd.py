@@ -49,7 +49,7 @@ class Container(object):
         self.data['loc'] = np.zeros(shape=(size, 2), dtype=np.float32)
 
         while res:
-            if curr > 1000000:
+            if curr > 100000:
                 break
             i = curr
             for i, doc in enumerate(res, curr):
@@ -63,7 +63,7 @@ class Container(object):
 
     def stats(self):
         return 'Loaded {} records in {} s.\n{}'.format(
-            self.size, self.loadtime, 
+            self.size, self.loadtime,
             '\n'.join('\t{}: {} - {}'.format(
                 k, type(self.data[k]), self.data[k].shape)
                     for k in self.data))
