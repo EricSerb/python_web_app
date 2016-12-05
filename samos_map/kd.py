@@ -19,7 +19,11 @@ solr.core.SearchHandler.__call__ = new_call
 
 
 class Container(object):
-    
+    """
+    This class contains the methods to get all of the data from solr and
+    populate the kd tree and contain that in memory so that main can quickly
+    access the data to return to the client.
+    """
     def __init__(self):
         t = time()
         self.api = solr.Solr('http://localhost:8983/solr/samos')
@@ -35,12 +39,21 @@ class Container(object):
         self.loadtime = time() - t
 
     def _add(self, doc, idx):
-        # aw yeh loop unrolling coz im a human compiler
+        """
+        Adding the data to the arrays in memory
+        :param doc: The document returned from solr
+        :param idx: The index into the array where the information belongs
+        """
         self.data['meta'][idx] = doc['meta']
         self.data['time'][idx] = doc['time']
         self.data['loc'][idx][:] = self._convpoint(doc['loc'])
 
     def _load(self):
+        """
+        Creates the in memory arrays to store data from solr. Then queries
+        solr to obtain all the data we will need for the map.
+        :return: number of points returned from all queries
+        """
         fields = ['time', 'loc', 'meta']
         res = self.api.select(q='*:*', fields=fields, rows=1000)
         curr, size = 0, res.numFound
@@ -58,10 +71,20 @@ class Container(object):
         return size
 
     def _convpoint(self, pntstr):
+        """
+        Converting the location string from solr to the lat and lon that will
+        be used as a point on the map
+        :param pntstr: point string from solr
+        :return: (lon, lat)
+        """
         nums = map(float, re.findall(self.wktreg, pntstr))
         return tuple(reversed(tuple(iter(nums))))
 
     def stats(self):
+        """
+        Creates a string about the data load time
+        :return: string
+        """
         return 'Loaded {} records in {} s.\n{}'.format(
             self.size, self.loadtime,
             '\n'.join('\t{}: {} - {}'.format(
