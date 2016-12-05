@@ -19,7 +19,7 @@ fmt = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
 fh = logging.FileHandler('server.log')
 fh.setFormatter(fmt)
 log.addHandler(fh)
-
+log.info(data.stats())
 
 
 def convlon360(l_360):
