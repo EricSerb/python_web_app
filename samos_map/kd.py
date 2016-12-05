@@ -1,6 +1,5 @@
 import solr
 import re
-import sys
 from functools import reduce
 from operator import or_
 from time import time
