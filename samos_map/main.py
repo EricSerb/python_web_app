@@ -82,15 +82,25 @@ def index():
 
 @app.errorhandler(404)
 def page_not_found(error):
+    """
+    This is an error handler incase the user tries to access a page that we
+    do not have.
+    :param error: the url of the web page trying to be accessed
+    :return: 404 page to be displayed
+    """
     log.error("Some user tried to access {}".format(error))
     return render_template('page_not_found.html'), 404
 
 
 # simple unit test for the index
 def unittest():
-    with app.test_request_context('/', method='POST'):
+    """
+    Tests that the root path that is requested is '/' and the method for it
+    is a 'GET' method
+    """
+    with app.test_request_context('/', method='GET'):
         assert request.path == '/'
-        assert request.method == 'POST'
+        assert request.method == 'GET'
 
 
 if __name__ == '__main__':
