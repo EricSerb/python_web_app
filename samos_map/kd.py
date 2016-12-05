@@ -7,9 +7,11 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 # this is a monkey patch I used from solrpy/issues/27
-#  it stops next_batch() from overwriting fields 
-#  and returning all fields after the first call
+# it stops next_batch() from overwriting fields
+# and returning all fields after the first call
 old_call = solr.core.SearchHandler.__call__
+
+
 def new_call(self, q=None, fields=None, *args, **params):
     fields = params.pop('fl', fields)
     return old_call(self, q, fields, *args, **params)
@@ -28,7 +30,8 @@ class Container(object):
         #  which severely hurts performance on sorted data
         #  -- solr returns semi sorted data usually
         # compact_nodes barely affects performance
-        self.tree = cKDTree(self.data['loc'], balanced_tree=False)#, compact_nodes=False)
+        # , compact_nodes=False)
+        self.tree = cKDTree(self.data['loc'], balanced_tree=False)
         self.loadtime = time() - t
 
     def _add(self, doc, idx):
@@ -41,12 +44,14 @@ class Container(object):
         fields = ['time', 'loc', 'meta']
         res = self.api.select(q='*:*', fields=fields, rows=1000)
         curr, size = 0, res.numFound
-        self.data = { key : np.zeros(shape=(size,), dtype=object)
-            for key in ('time', 'meta') }
+        self.data = {key: np.zeros(shape=(size,), dtype=object)
+                     for key in ('time', 'meta')}
         self.data['loc'] = np.zeros(shape=(size, 2), dtype=np.float32)
 
         while res:
-            if curr > 1000000: break
+            if curr > 1000000:
+                break
+            i = curr
             for i, doc in enumerate(res, curr):
                 self._add(doc, i)
             res, curr = res.next_batch(), i + 1
@@ -64,7 +69,6 @@ class Container(object):
                     for k in self.data))
 
     def bbox(self, lats, lons, k=100):
-        S = set()
         # query 2 points in roughly l/r centers of map view
         # to get a better sampling of data points when k is small
         # ------------
@@ -76,7 +80,7 @@ class Container(object):
         X = np.linspace(*lons, num=4, endpoint=True)[1:3]
         Y = np.linspace(*lats, num=3, endpoint=True)[1]
         return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
-            for p in ((X[0], Y), (X[1], Y))]))
+                                 for p in ((X[0], Y), (X[1], Y))]))
         
 
 if __name__ == '__main__':
@@ -84,5 +88,3 @@ if __name__ == '__main__':
     print(KD.stats(), flush=True)
     if 1:
         print(KD.bbox((40.0, 60.0), (-135.0, -115.0)))
-
-
