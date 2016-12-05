@@ -51,17 +51,17 @@ def dat():
         lats = (bounds['S'], bounds['N'])
         lons = tuple(map(convlon360, (bounds['W'], bounds['E'])))
         idx = data.bbox(lats, lons, k=1000)
-        return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i)}
-            for d, i in zip(data.tree.data[idx], idx)])
+        return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i)
+                                }for d, i in zip(data.tree.data[idx], idx)])
 
     def ancillary(idx):
-        return jsonify({key : str(data.data[key][idx])
-            for key in ('meta', 'time')})
+        return jsonify({key: str(data.data[key][idx])
+                        for key in ('meta', 'time')})
 
     if 'idx' in request.args:
         return ancillary(int(request.args['idx']))
     else:
-        return pins({card : float(request.args[card])
+        return pins({card: float(request.args[card])
                     for card in ('S', 'N', 'W', 'E')})
 
 
@@ -82,6 +82,7 @@ def index():
 
 @app.errorhandler(404)
 def page_not_found(error):
+    log.error("Some user tried to access {}".format(error))
     return render_template('page_not_found.html'), 404
 
 
