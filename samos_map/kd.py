@@ -31,13 +31,13 @@ class Container(object):
         self.api = solr.Solr('http://localhost:8983/solr/samos')
         self.wktreg = re.compile(r'[-+]?\d*\.\d+|\d+')
         self.data = None
-        self.size = self._load()
+        self.size, self.total = self._load()
         # python3 version of cKDTree does periodic quick sort
         #  which severely hurts performance on sorted data
         #  -- solr returns semi sorted data usually
         # compact_nodes barely affects performance
         # , compact_nodes=False)
-        self.tree = cKDTree(self.data['loc'], balanced_tree=False)
+        self.tree = cKDTree(self.data['loc'][:self.total], balanced_tree=False)
         self.loadtime = time() - t
 
     def _add(self, doc, idx):
@@ -46,7 +46,7 @@ class Container(object):
         :param doc: The document returned from solr
         :param idx: The index into the array where the information belongs
         """
-        self.data['meta'][idx] = doc['meta']
+        self.data['meta'][idx] = str(doc['meta'])
         self.data['time'][idx] = doc['time']
         self.data['loc'][idx][:] = self._convpoint(doc['loc'])
 
@@ -57,20 +57,21 @@ class Container(object):
         :return: number of points returned from all queries
         """
         fields = ['time', 'loc', 'meta']
-        res = self.api.select(q='*:*', fields=fields, rows=1000)
+        query = 'time:[2016-01-01T00:00:00.00Z TO 2017-01-01T00:00:00.00Z]'
+        res = self.api.select(q=query, fields=fields, rows=1000)
         curr, size = 0, res.numFound
         self.data = {key: np.zeros(shape=(size,), dtype=object)
                      for key in ('time', 'meta')}
         self.data['loc'] = np.zeros(shape=(size, 2), dtype=np.float32)
 
         while res:
-            if curr > 10000:
+            if curr > 100000:
                 break
             i = curr
             for i, doc in enumerate(res, curr):
                 self._add(doc, i)
             res, curr = res.next_batch(), i + 1
-        return size
+        return size, curr - 1
 
     def _convpoint(self, pntstr):
         """
@@ -87,13 +88,13 @@ class Container(object):
         Creates a string about the data load time
         :return: string
         """
-        return 'Loaded {} records in {} s.\n{}'.format(
-            self.size, self.loadtime,
+        return 'Loaded {} of {} records in {} s.\n{}'.format(
+            self.total, self.size, self.loadtime,
             '\n'.join('\t{}: {} - {}'.format(
                 k, type(self.data[k]), self.data[k].shape)
                     for k in self.data))
 
-    def bbox(self, lats, lons, k=100):
+    def bbox(self, lats, lons, k=5000):
         """
         query 2 points in roughly l/r centers of map view
         to get a better sampling of data points when k is small
@@ -108,13 +109,12 @@ class Container(object):
         :param k: the number of points to be returned
         :return: a list of points to be layered onto the map
         """
-        X = np.linspace(*lons, num=4, endpoint=False, dtype=np.float32)
-        Y = np.linspace(*lats, num=3, endpoint=False, dtype=np.float32)
+        X = np.linspace(*lons, num=4, endpoint=True, dtype=np.float32)
+        Y = np.linspace(*lats, num=3, endpoint=True, dtype=np.float32)
         max_d = sqrt(sum((i-j)**2 for i, j in zip(X[0:2], Y[0:2]))) / 2
         
-        # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
-        #                          for p in ((X[0], Y), (X[1], Y))]))
-
+        # the permutation function returns things in separated groups
+        # so this function simply flattens the nested lists down to tuples
         def flatten(iterable):
             for i in iterable:
                 if isinstance(i, tuple):
@@ -124,21 +124,8 @@ class Container(object):
         
         qpnts = list(flatten([zip(_x, Y) for _x in permutations(X, len(Y))]))
         res = self.tree.query(qpnts, k=k, distance_upper_bound=max_d, n_jobs=-1)[1]
-        return list(reduce(or_, map(set, res)))
+        return list(reduce(or_, map(set, res)) - set([self.total]))
 
 
 if __name__ == '__main__':
-    X = np.linspace(*(0.0, 100.0), num=4, endpoint=False)
-    Y = np.linspace(*(-100.0, 0.0), num=3, endpoint=False)
-    # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
-    #                          for p in ((X[0], Y), (X[1], Y))]))
-
-    def flatten(iterable):
-        for i in iterable:
-            if isinstance(i, tuple):
-                yield i
-            else:
-                yield from flatten(i)
-    
-    print(list(flatten([zip(_x, Y)
-                        for _x in permutations(X, len(Y))])))
+    c = Container()

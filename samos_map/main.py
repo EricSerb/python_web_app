@@ -2,9 +2,11 @@
 Entry point for a minimal flask application from here.
 """
 import os
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, make_response
 import kd
 import logging
+from datetime import datetime
+from functools import wraps, update_wrapper
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -24,6 +26,17 @@ fh.setFormatter(fmt)
 log.addHandler(fh)
 log.info(data.stats())
 
+def nocache(view):
+    @wraps(view)
+    def no_cache(*args, **kwargs):
+        response = make_response(view(*args, **kwargs))
+        response.headers['Last-Modified'] = datetime.now()
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '-1'
+        return response
+        
+    return update_wrapper(no_cache, view)
 
 def convlon360(l_360):
     """
@@ -50,9 +63,10 @@ def dat():
     def pins(bounds):
         lats = (bounds['S'], bounds['N'])
         lons = tuple(map(convlon360, (bounds['W'], bounds['E'])))
-        idx = data.bbox(lats, lons, k=500)
-        return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i)
-                                }for d, i in zip(data.tree.data[idx], idx)])
+        idx = data.bbox(lats, lons, k=5000)
+        return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i), 'meta': m[:m.find('_')]
+                                }for d, i, m in zip(data.tree.data[idx], idx, data.data['meta'][idx])
+                                if (lons[0] < d[0] < lons[1]) and (lats[0] < d[1] < lats[1])])
 
     def ancillary(idx):
         return jsonify({key: str(data.data[key][idx])
@@ -66,6 +80,7 @@ def dat():
 
 
 @app.route('/', methods=['GET'])
+@nocache
 def index():
     """
     The base web page for the map. We grab the bbox from the user
@@ -105,4 +120,3 @@ def unittest():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-    conn.close()
