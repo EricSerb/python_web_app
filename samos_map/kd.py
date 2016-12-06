@@ -111,6 +111,7 @@ class Container(object):
         X = np.linspace(*lons, num=4, endpoint=False, dtype=np.float32)
         Y = np.linspace(*lats, num=3, endpoint=False, dtype=np.float32)
         max_d = float(sqrt(sum((i-j)**2) for i, j in zip(X[0:2], Y[0:2]))) / 2
+        
         # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
         #                          for p in ((X[0], Y), (X[1], Y))]))
 
@@ -121,13 +122,15 @@ class Container(object):
                 else:
                     yield from flatten(i)
         
+        qpnts = list(flatten([zip(_x, Y) for _x in permutations(X, len(Y))]))
+        res = self.tree.query(qpnts, k=k, distance_upper_bound=max_d)[1]
+        
+        print(res.shape)
+        print(res)
         # print(list(flatten([zip(_x, Y)
         #                     for _x in permutations(X, len(Y))])))
-
-        return list(reduce(or_, [set(self.tree.query(p, k=k,
-                                     distance_upper_bound=max_d)[1])
-                                     for p in flatten([zip(_x, Y)
-                                     for _x in permutations(X, len(Y))])]))
+        return [0]
+        # return list(reduce(or_, )
 
 
 if __name__ == '__main__':
