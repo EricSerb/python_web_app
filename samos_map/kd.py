@@ -6,6 +6,7 @@ from time import time
 import numpy as np
 from scipy.spatial import cKDTree
 from itertools import permutations
+from math import sqrt
 
 # this is a monkey patch I used from solrpy/issues/27
 # it stops next_batch() from overwriting fields
@@ -109,6 +110,7 @@ class Container(object):
         """
         X = np.linspace(*lons, num=4, endpoint=False)
         Y = np.linspace(*lats, num=3, endpoint=False)
+        max_d = sqrt(sum((i-j)**2) for i, j in zip(X[0:2], Y[0:2])) / 2
         # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
         #                          for p in ((X[0], Y), (X[1], Y))]))
 
@@ -122,9 +124,10 @@ class Container(object):
         # print(list(flatten([zip(_x, Y)
         #                     for _x in permutations(X, len(Y))])))
 
-        return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
-                                 for p in flatten([zip(_x, Y)
-                                 for _x in permutations(X, len(Y))])]))
+        return list(reduce(or_, [set(self.tree.query(p, k=k,
+                                     distance_upper_bound=max_d)[1])
+                                     for p in flatten([zip(_x, Y)
+                                     for _x in permutations(X, len(Y))])]))
 
 
 if __name__ == '__main__':
