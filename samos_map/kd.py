@@ -93,14 +93,20 @@ class Container(object):
                     for k in self.data))
 
     def bbox(self, lats, lons, k=100):
-        # query 2 points in roughly l/r centers of map view
-        # to get a better sampling of data points when k is small
-        # ------------
-        # |          |
-        # |  x    x  |  <--- LIKE THIS
-        # |          |
-        # ------------
-        # p.s. numpy is awesome
+        """
+        query 2 points in roughly l/r centers of map view
+        to get a better sampling of data points when k is small
+        ------------
+        |          |
+        |  x    x  |  <--- LIKE THIS
+        |          |
+        ------------
+        p.s. numpy is awesome
+        :param lats: tuple of latitiudes for bounding box
+        :param lons: tuple of longitudes for the bounding box
+        :param k: the number of points to be returned
+        :return: a list of points to be layered onto the map
+        """
         X = np.linspace(*lons, num=4, endpoint=False)
         Y = np.linspace(*lats, num=3, endpoint=False)
         # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
