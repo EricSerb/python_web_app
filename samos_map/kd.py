@@ -123,7 +123,7 @@ class Container(object):
                     yield from flatten(i)
         
         qpnts = list(flatten([zip(_x, Y) for _x in permutations(X, len(Y))]))
-        res = list(set(flatten(self.tree.query(qpnts, k=k, distance_upper_bound=max_d)[1], lowest_inst=np.int64)))
+        res = list(set(flatten(self.tree.query(qpnts, k=k, distance_upper_bound=max_d, n_jobs=-1)[1], lowest_inst=np.int64)))
         
         # res = 
         
