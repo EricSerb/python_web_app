@@ -108,9 +108,9 @@ class Container(object):
         :param k: the number of points to be returned
         :return: a list of points to be layered onto the map
         """
-        X = np.linspace(*lons, num=4, endpoint=False)
-        Y = np.linspace(*lats, num=3, endpoint=False)
-        max_d = sqrt(sum((i-j)**2) for i, j in zip(X[0:2], Y[0:2])) / 2
+        X = np.linspace(*lons, num=4, endpoint=False, dtype=np.float32)
+        Y = np.linspace(*lats, num=3, endpoint=False, dtype=np.float32)
+        max_d = float(sqrt(sum((i-j)**2) for i, j in zip(X[0:2], Y[0:2]))) / 2
         # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
         #                          for p in ((X[0], Y), (X[1], Y))]))
 
