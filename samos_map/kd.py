@@ -5,6 +5,7 @@ from operator import or_
 from time import time
 import numpy as np
 from scipy.spatial import cKDTree
+from itertools import permutations
 
 # this is a monkey patch I used from solrpy/issues/27
 # it stops next_batch() from overwriting fields
@@ -100,11 +101,22 @@ class Container(object):
         # |          |
         # ------------
         # p.s. numpy is awesome
-        X = np.linspace(*lons, num=4, endpoint=True)[1:3]
-        Y = np.linspace(*lats, num=3, endpoint=True)[1]
+        X = np.linspace(*lons, num=4, endpoint=False)
+        Y = np.linspace(*lats, num=3, endpoint=False)
+        # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
+        #                          for p in ((X[0], Y), (X[1], Y))]))
+
+        def flatten(iterable):
+            for i in iterable:
+                if isinstance(i, tuple):
+                    yield i
+                else:
+                    yield flatten(i)
+
         return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
-                                 for p in ((X[0], Y), (X[1], Y))]))
-        
+                                 for p in flatten([zip(_x, Y)
+                                 for _x in permutations(X, len(Y))])]))
+
 
 if __name__ == '__main__':
     KD = Container()
