@@ -111,7 +111,10 @@ class Container(object):
                 if isinstance(i, tuple):
                     yield i
                 else:
-                    yield flatten(i)
+                    yield from flatten(i)
+        
+        print(list(flatten([zip(_x, Y)
+                            for _x in permutations(X, len(Y))])))
 
         return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
                                  for p in flatten([zip(_x, Y)
@@ -119,7 +122,17 @@ class Container(object):
 
 
 if __name__ == '__main__':
-    KD = Container()
-    print(KD.stats(), flush=True)
-    if 1:
-        print(KD.bbox((40.0, 60.0), (-135.0, -115.0)))
+    X = np.linspace(*(0.0, 100.0), num=4, endpoint=False)
+    Y = np.linspace(*(-100.0, 0.0), num=3, endpoint=False)
+    # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
+    #                          for p in ((X[0], Y), (X[1], Y))]))
+
+    def flatten(iterable):
+        for i in iterable:
+            if isinstance(i, tuple):
+                yield i
+            else:
+                yield from flatten(i)
+    
+    print(list(flatten([zip(_x, Y)
+                        for _x in permutations(X, len(Y))])))
