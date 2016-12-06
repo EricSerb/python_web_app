@@ -115,24 +115,16 @@ class Container(object):
         # return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
         #                          for p in ((X[0], Y), (X[1], Y))]))
 
-        def flatten(iterable, lowest_inst=tuple):
+        def flatten(iterable):
             for i in iterable:
-                if isinstance(i, lowest_inst):
+                if isinstance(i, tuple):
                     yield i
                 else:
                     yield from flatten(i)
         
         qpnts = list(flatten([zip(_x, Y) for _x in permutations(X, len(Y))]))
-        res = list(set(flatten(self.tree.query(qpnts, k=k, distance_upper_bound=max_d, n_jobs=-1)[1], lowest_inst=np.int64)))
-        
-        # res = 
-        
-        print(res.shape)
-        print(res)
-        # print(list(flatten([zip(_x, Y)
-        #                     for _x in permutations(X, len(Y))])))
-        return res
-        # return list(reduce(or_, )
+        res = self.tree.query(qpnts, k=k, distance_upper_bound=max_d, n_jobs=-1)[1]
+        return list(reduce(or_, map(set, res)))
 
 
 if __name__ == '__main__':
