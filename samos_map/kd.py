@@ -119,8 +119,8 @@ class Container(object):
                 else:
                     yield from flatten(i)
         
-        print(list(flatten([zip(_x, Y)
-                            for _x in permutations(X, len(Y))])))
+        # print(list(flatten([zip(_x, Y)
+        #                     for _x in permutations(X, len(Y))])))
 
         return list(reduce(or_, [set(self.tree.query(p, k=k)[1])
                                  for p in flatten([zip(_x, Y)
