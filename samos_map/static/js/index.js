@@ -17,8 +17,9 @@ var mini = new L.Control.MiniMap(miniosm, { toggleDisplay: true }).addTo(map);
 
 
 map.on('click', function(e) {
-    console.log('click event object: ' + e);
+    console.log('click event object: '); console.log(e);
     console.log(e.latlng.lat, e.latlng.lng, map.getZoom());
+    ancillaryData(e.latlng.lat, e.latlng.lng);
 });
 
 
@@ -36,6 +37,34 @@ L.control.coordinates({
 }).addTo(map);
 
 
+var info = L.control();
+
+info.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'info');
+    this.update();
+    return this._div;
+};
+
+info.update = function (rec) {
+    if (rec != null) {
+        latlon = rec.loc.split(',');
+        lat = parseInt(latlon[0], 10);
+        lon = parseInt(latlon[1], 10);
+        map.setView([lat, lon], map.getZoom());
+        console.log(rec);
+    }
+    this._div.innerHTML = '<h3>SAMOS record viewer</h3>' +  (rec ?
+        '<b><a href="' + rec.thredds + '">' + rec.meta + '</a></b><br />' + 
+        '<b>loc</b> : ' + rec.loc + '<br />' +
+        '<b>SSS</b> : ' + rec.SSS + ' <b>PSU<b/><br />' +
+        '<b>SST</b> : ' + rec.SST + ' <b>&#8451;<b/><br />' +
+        '<b>wind_u</b> : ' + rec.wind_u + ' <b>m/s<b/><br />' +
+        '<b>wind_v</b> : ' + rec.wind_v + ' <b>m/s<b/><br />' +
+        '<b>wind_speed</b> : ' + rec.wind_speed + ' <b>m/s<b/><br />'
+        : 'Click anywhere on map');
+};
+
+info.addTo(map);
 
 
 function moveHandler() {
@@ -152,24 +181,27 @@ function pinTheMap(data) {
         
         clusters[keys[i]].on('clusterclick', function (a) {
             a.layer.setOpacity(0.7);
-            console.log('Clusterclick event object: ' + a);
+            console.log('Clusterclick event object: '); console.log(a);
+            ancillaryData(a.latlng.lat, a.latlng.lng);
         });
     }
 
     // markerLayerGroup = L.layerGroup(markerArray).addTo(map);
 }
 
-function ancillaryData(popup) {
+function ancillaryData(lat, lon) {
     // idx corresponds to where this point is in the server's data
-    url = "/map/data?idx=" + popup._content;
+    url = "/map/data?lat=" + lat + "&lon=" + lon;
     console.log(url);
     var text = "";
     $.getJSON(url, function(data) {
-        text = data['meta'] + '\n' + data['time'];
-        console.log(text);
+        // text = data['meta'] + '\n' + data['time'];
+        console.log(data);
+        info.update(data);
     });
-    console.log(text);
-    return text;
+    map.fire('idle');
+    // console.log(text);
+    // return text;
 }
 
 

@@ -26,8 +26,9 @@ class Container(object):
     populate the kd tree and contain that in memory so that main can quickly
     access the data to return to the client.
     """
-    def __init__(self):
+    def __init__(self, limit=100000):
         t = time()
+        self.limit = limit
         self.api = solr.Solr('http://localhost:8983/solr/samos')
         self.wktreg = re.compile(r'[-+]?\d*\.\d+|\d+')
         self.data = None
@@ -65,7 +66,7 @@ class Container(object):
         self.data['loc'] = np.zeros(shape=(size, 2), dtype=np.float32)
 
         while res:
-            if curr > 100000:
+            if self.limit and (curr > self.limit):
                 break
             i = curr
             for i, doc in enumerate(res, curr):
@@ -96,13 +97,13 @@ class Container(object):
 
     def bbox(self, lats, lons, k=5000):
         """
-        query 2 points in roughly l/r centers of map view
+        query n*m points in gridded fashion of the current map view
         to get a better sampling of data points when k is small
-        ------------
+        x---x--x---x
         |          |
-        |  x    x  |  <--- LIKE THIS
+        x   x  x   x  <--- LIKE THIS
         |          |
-        ------------
+        x---x--x---x
         p.s. numpy is awesome
         :param lats: tuple of latitiudes for bounding box
         :param lons: tuple of longitudes for the bounding box
@@ -126,6 +127,28 @@ class Container(object):
         res = self.tree.query(qpnts, k=k, distance_upper_bound=max_d, n_jobs=-1)[1]
         return list(reduce(or_, map(set, res)) - set([self.total]))
 
+    def nearest(self, lat, lon):
+        """
+        query the tree with 1 point and get the closest point. Return the meta
+        string using the returned index. (Remember, we use parallel arrays)
+        :param lat: single latitude
+        :param lon: single longitude
+        :return: the meta string for the closest point in the tree
+        """
+        return self.data['meta'][self.tree.query((lon, lat), k=1)[1]]
+
+    def ancillary(self, meta):
+        """
+        Gets
+        :param lat: a meta string representing a SAMOS record
+        :return: dictionry of fields and values correlated with the doc
+        """
+        query = 'meta:{}'.format(meta)
+        res = self.api.select(q=query, rows=1)
+        doc = None
+        for r in res:
+            doc = r
+        return doc
 
 if __name__ == '__main__':
-    c = Container()
+    print(Container().stats())

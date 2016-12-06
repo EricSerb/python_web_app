@@ -13,7 +13,7 @@ app.config['DEBUG'] = True
 app.secret_key = os.urandom(32)
 
 # Creating the kd tree from all of number of points that we request from solr
-data = kd.Container()
+data = kd.Container(limit=1000000)
 
 """
 Creating a logger in order to log all of out print statements to a file.
@@ -72,8 +72,12 @@ def dat():
         return jsonify({key: str(data.data[key][idx])
                         for key in ('meta', 'time')})
 
+
     if 'idx' in request.args:
         return ancillary(int(request.args['idx']))
+    elif 'lat' in request.args and 'lon' in request.args:
+        print(data.ancillary(data.nearest(request.args['lat'], request.args['lon'])))
+        return jsonify(data.ancillary(data.nearest(request.args['lat'], request.args['lon'])))
     else:
         return pins({card: float(request.args[card])
                     for card in ('S', 'N', 'W', 'E')})
