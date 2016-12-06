@@ -50,7 +50,7 @@ def dat():
     def pins(bounds):
         lats = (bounds['S'], bounds['N'])
         lons = tuple(map(convlon360, (bounds['W'], bounds['E'])))
-        idx = data.bbox(lats, lons, k=1000)
+        idx = data.bbox(lats, lons, k=500)
         return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i)
                                 }for d, i in zip(data.tree.data[idx], idx)])
 
