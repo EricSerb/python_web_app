@@ -64,7 +64,7 @@ class Container(object):
         self.data['loc'] = np.zeros(shape=(size, 2), dtype=np.float32)
 
         while res:
-            if curr > 100000:
+            if curr > 10000:
                 break
             i = curr
             for i, doc in enumerate(res, curr):
