@@ -5,7 +5,7 @@ from operator import or_
 from time import time
 import numpy as np
 from scipy.spatial import cKDTree
-from itertools import permutations
+from itertools import permutations, product
 from math import sqrt
 
 # this is a monkey patch I used from solrpy/issues/27
@@ -112,19 +112,10 @@ class Container(object):
         """
         X = np.linspace(*lons, num=4, endpoint=True, dtype=np.float32)
         Y = np.linspace(*lats, num=3, endpoint=True, dtype=np.float32)
-        max_d = sqrt(sum((i-j)**2 for i, j in zip(X[0:2], Y[0:2]))) / 2
+        r = sqrt(sum((i-j)**2 for i, j in [X[0:2], Y[0:2]])) / 2
         
-        # the permutation function returns things in separated groups
-        # so this function simply flattens the nested lists down to tuples
-        def flatten(iterable):
-            for i in iterable:
-                if isinstance(i, tuple):
-                    yield i
-                else:
-                    yield from flatten(i)
-        
-        qpnts = list(flatten([zip(_x, Y) for _x in permutations(X, len(Y))]))
-        res = self.tree.query(qpnts, k=k, distance_upper_bound=max_d, n_jobs=-1)[1]
+        qpnts = list(product(X, Y))
+        res = self.tree.query(qpnts, k=k, distance_upper_bound=r, n_jobs=-1)[1]
         return list(reduce(or_, map(set, res)) - set([self.total]))
 
     def nearest(self, lat, lon):

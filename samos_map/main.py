@@ -13,7 +13,7 @@ app.config['DEBUG'] = True
 app.secret_key = os.urandom(32)
 
 # Creating the kd tree from all of number of points that we request from solr
-data = kd.Container(limit=1000000)
+data = kd.Container(limit=500000)
 
 """
 Creating a logger in order to log all of out print statements to a file.
