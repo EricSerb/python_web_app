@@ -80,22 +80,22 @@ class Test(unittest.TestCase):
 
 
 class Test_100(Test):
-    Test.con = kd.container(limit=100)
+    Test.con = kd.Container(limit=100)
     Test.lim = 100
 
 
 class Test_1001(Test):
-    Test.con = kd.container(limit=1001)
+    Test.con = kd.Container(limit=1001)
     Test.lim = 1001
 
 
 class Test_1999(Test):
-    Test.con = kd.container(limit=1999)
+    Test.con = kd.Container(limit=1999)
     Test.lim = 1999
 
 
 class Test_2000(Test):
-    Test.con = kd.container(limit=2000)
+    Test.con = kd.Container(limit=2000)
     Test.lim = 2000
 
 
