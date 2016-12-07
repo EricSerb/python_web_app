@@ -85,13 +85,15 @@ class Test(unittest.TestCase):
     def test_add(self):
         idx_0 = {'meta': Test.con.data['meta'][0], 'time': Test.con.data[
             'time'][0], 'loc': Test.con.data['loc'][0][:]}
-        idx_0['loc'] = ','.join(map(str, reversed(idx_0['loc'])))
+        idx_0['loc'] = ','.join(map(repr, reversed(idx_0['loc'])))
         Test.con._add(idx_0, -1)
         for key in ['meta', 'time']:
             assert Test.con.data[key][0] == Test.con.data[key][-1]
 
         for i in [0, 1]:
-            assert Test.con.data['loc'][0][i] == Test.con.data['loc'][-1][i]
+            assert Test.con.data['loc'][0][i] == Test.con.data['loc'][-1][i], \
+                'Error: test add arrays did not match for loc: {} != {}' \
+                .format(Test.con.data['loc'][0], Test.con.data['loc'][-1])
 
 
 class Test_100(Test):
