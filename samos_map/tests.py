@@ -3,10 +3,11 @@ import kd
 import requests
 
 
-class Test(unittest):
+class Test(unittest.TestCase):
 
-    def __init__(self):
-        self.con = Container(limit=100)
+    def __init__(self, *args, **kwargs):
+        self.con = kd.Container(limit=100)
+        super(self, Test).__init__(*args, **kwargs)
 
     def test_vars(self):
         assert self.con.limit == 100
