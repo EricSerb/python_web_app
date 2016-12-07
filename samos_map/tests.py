@@ -106,5 +106,5 @@ if __name__ == "__main__":
         suite_list.append(loader.loadTestsFromTestCase(cls))
 
     all_suite = unittest.TestSuite(suite_list)
-    runner = unittest.TextTestRunner
+    runner = unittest.TextTestRunner()
     res = runner.run(all_suite)
