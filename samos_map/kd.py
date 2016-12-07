@@ -47,7 +47,6 @@ class Container(object):
         global lock, ready
         t = time()
         self.limit = limit
-        print('Container using {} limit {}'.format(type(limit), limit))
         self.api = solr.Solr('http://localhost:8983/solr/samos')
         self.wktreg = re.compile(r'[-+]?\d*\.\d+|\d+')
         self.data = None
@@ -166,8 +165,4 @@ class Container(object):
 
 def init(limit=5000000):
     global container
-    print('Initing container in kd module')
     container = Container(limit=limit)
-
-if __name__ == '__main__':
-    print(Container().stats())

@@ -38,7 +38,6 @@ def waitready(router):
             return router(*args, **kwargs)
         else:
             log.warning('User requested page while tree is loading.')
-            print(dir(router))
             return render_template('page_not_found.html')
     return update_wrapper(rerouter, router)
 
@@ -147,7 +146,7 @@ def unittest():
 
 def init():
     global app, kdthread
-    app.config['DEBUG'] = True
+    #app.config['DEBUG'] = True
     app.secret_key = os.urandom(32)
 
     def interrupt():
