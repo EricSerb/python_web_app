@@ -9,8 +9,8 @@ class Test(unittest.TestCase):
     lim = None
 
     def test_vars(self):
-        assert Test.con.limit == lim, 'Error, Test.con.limit should have ' \
-                                      'been {}, was {}'.format(lim,
+        assert Test.con.limit == Test.lim, 'Error, Test.con.limit should have ' \
+                                      'been {}, was {}'.format(Test.lim,
                                                                Test.con.limit)
         assert Test.con.tree, 'Error, Test.con.tree was empty'
         assert Test.con.size > 0, 'Error, Test.con.size should have ' \
@@ -36,14 +36,14 @@ class Test(unittest.TestCase):
                                           len(Test.con.data['time']),
                                           len(Test.con.data['meta']),
                                           len(Test.con.data['loc']))
-        assert Test.con.data['meta'][lim-1], 'Error, Test.con.data["meta"][99] ' \
+        assert Test.con.data['meta'][Test.lim-1], 'Error, Test.con.data["meta"][99] ' \
                                           'is empty'
-        assert not Test.con.data['meta'][lim], 'Error, Test.con.data["meta"][{}] ' \
+        assert not Test.con.data['meta'][Test.lim], 'Error, Test.con.data["meta"][{}] ' \
                                           'is not empty, Test.contains {}'\
-                                          ''.format(lim, Test.con.data['meta'][lim])
+                                          ''.format(Test.lim, Test.con.data['meta'][Test.lim])
 
     def test_anc(self):
-        anc = Test.con.ancillary(Test.con.data['meta'][lim-1])
+        anc = Test.con.ancillary(Test.con.data['meta'][Test.lim-1])
         assert isinstance(anc, dict)
         for key in ['meta', 'time', 'loc', 'wind_u', 'wind_v', 'wind_speed',
                     'SSS', 'SST', 'thredds']:
@@ -76,7 +76,7 @@ class Test(unittest.TestCase):
         pnts = Test.con.bbox((91, -91), (-181, 181))
         assert len(pnts) == Test.con.limit, 'Error, len(pnts) should be ' \
                                             'equal to the limit {}, ' \
-                                            'got {}'.format(lim, len(pnts))
+                                            'got {}'.format(Test.lim, len(pnts))
 
 
 class Test_100(Test):
