@@ -35,9 +35,9 @@ class Test(unittest.TestCase):
                                           len(Test.con.data['time']),
                                           len(Test.con.data['meta']),
                                           len(Test.con.data['loc']))
-        assert Test.con.data['meta'][100], 'Error, Test.con.data["meta"][99] ' \
+        assert Test.con.data['meta'][99], 'Error, Test.con.data["meta"][99] ' \
                                           'is empty'
-        assert not Test.con.data['meta'][101], 'Error, ' \
+        assert not Test.con.data['meta'][100], 'Error, ' \
                                                'Test.con.data["meta"][100] ' \
                                                'is not empty, contains {}'\
                                                ''.format(
