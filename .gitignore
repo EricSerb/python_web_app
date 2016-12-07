@@ -10,3 +10,7 @@ samos_map/deprecated/*
 *.log
 samos_map/*.log
 example.db
+*.coverage
+cover/
+samos_map/cover/
+samos_map/.coverage
