@@ -35,9 +35,9 @@ class Test(unittest.TestCase):
                                           len(Test.con.data['time']),
                                           len(Test.con.data['meta']),
                                           len(Test.con.data['loc']))
-        assert Test.con.data['meta'][99], 'Error, Test.con.data["meta"][99] ' \
+        assert Test.con.data['meta'][100], 'Error, Test.con.data["meta"][99] ' \
                                           'is empty'
-        assert not Test.con.data['meta'][100], 'Error, ' \
+        assert not Test.con.data['meta'][101], 'Error, ' \
                                                'Test.con.data["meta"][100] ' \
                                                'is not empty, contains {}'\
                                                ''.format(
@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
         pnts = Test.con.bbox((91, -91), (-181, 181))
         assert len(pnts) == Test.con.limit, 'Error, len(pnts) should be ' \
                                             'equal to the limit {}, ' \
-                                            'got '.format(100, len(pnts))
+                                            'got {}'.format(100, len(pnts))
 
 
 if __name__ == "__main__":
