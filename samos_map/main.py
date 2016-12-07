@@ -9,6 +9,7 @@ from datetime import datetime
 from functools import wraps, update_wrapper
 import threading
 import atexit
+import argparse
 
 app = Flask(__name__)
 ready = False
@@ -144,7 +145,7 @@ def unittest():
         assert request.path == '/'
         assert request.method == 'GET'
 
-def init():
+def init(args):
     global app, kdthread
     #app.config['DEBUG'] = True
     app.secret_key = os.urandom(32)
@@ -156,7 +157,7 @@ def init():
     @app.before_first_request
     def start():
         global kdthread
-        kdthread = threading.Thread(target=kd.init, kwargs={'limit':10000})
+        kdthread = threading.Thread(target=kd.init, kwargs={'limit':args.limit})
         kdthread.start()
         log.info('Instantiating tree')
 
@@ -164,5 +165,12 @@ def init():
     atexit.register(interrupt)
     
 if __name__ == '__main__':
-    init()
-    app.run(host='0.0.0.0', port=5000, use_reloader=False)
+    ap = argparse.ArgumentParser()
+    ap.add_argument('-l', '--limit', default=1000000, type=int,
+                    help='Limit number of points extracted from Solr' \
+                   ' into the KD tree object.')
+    ap.add_argument('-p', '--port', default=5000, type=int,
+                    help='Set which port the application should listen on')
+    args = ap.parse_args()
+    init(args)
+    app.run(host='0.0.0.0', port=args.port, use_reloader=False)
