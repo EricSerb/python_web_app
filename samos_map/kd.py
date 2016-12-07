@@ -80,7 +80,7 @@ class Container(object):
         """
         fields = ['time', 'loc', 'meta']
         query = 'time:[2016-01-01T00:00:00.00Z TO 2017-01-01T00:00:00.00Z]'
-        res = self.api.select(q=query, fields=fields, rows=1000)
+        res = self.api.select(q=query, fields=fields, rows=min(1000, self.limit))
         curr, size = 0, res.numFound
         self.data = {key: np.zeros(shape=(size,), dtype=object)
                      for key in ('time', 'meta')}
@@ -91,6 +91,8 @@ class Container(object):
                 break
             i = curr
             for i, doc in enumerate(res, curr):
+                if self.limit and i >= self.limit:
+                    break
                 self._add(doc, i)
             res, curr = res.next_batch(), i + 1
         return size, curr - 1
