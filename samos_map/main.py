@@ -7,13 +7,12 @@ import kd
 import logging
 from datetime import datetime
 from functools import wraps, update_wrapper
+import threading
+import atexit
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
-app.secret_key = os.urandom(32)
-
 ready = False
-
+kdthread = None
 
 """
 Creating a logger in order to log all of out print statements to a file.
@@ -31,13 +30,16 @@ def waitready(router):
     def rerouter(*args, **kwargs):
         global ready, log
         if ready: return router(*args, **kwargs)
-        if not kd.container: return render_template('page_not_found.html')
         with kd.lock:
-            if kd.container.ready:
-                ready = True
-                log.info(kd.container.stats())
-                return router(*args, **kwargs)
-            else: render_template('page_not_found.html')
+            ready = kd.ready
+        if ready:
+            log.info('Tree is now ready')
+            log.info(kd.container.stats())
+            return router(*args, **kwargs)
+        else:
+            log.warning('User requested page while tree is loading.')
+            print(dir(router))
+            return render_template('page_not_found.html')
     return update_wrapper(rerouter, router)
 
 def nocache(view):
@@ -143,7 +145,25 @@ def unittest():
         assert request.path == '/'
         assert request.method == 'GET'
 
+def init():
+    global app, kdthread
+    app.config['DEBUG'] = True
+    app.secret_key = os.urandom(32)
 
+    def interrupt():
+        global kdthread
+        kdthread.cancel()
+
+    @app.before_first_request
+    def start():
+        global kdthread
+        kdthread = threading.Thread(target=kd.init, kwargs={'limit':10000})
+        kdthread.start()
+        log.info('Instantiating tree')
+
+    start()
+    atexit.register(interrupt)
+    
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-    kd.init(limit=500000)
+    init()
+    app.run(host='0.0.0.0', port=5000, use_reloader=False)

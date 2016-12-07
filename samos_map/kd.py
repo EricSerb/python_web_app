@@ -14,6 +14,7 @@ import threading
 # before sending a client the webpage.
 lock = threading.Lock()
 container = None
+ready = False
 
 # this is a monkey patch I used from solrpy/issues/27
 # it stops next_batch() from overwriting fields
@@ -43,11 +44,10 @@ class Container(object):
     access the data to return to the client.
     """
     def __init__(self, limit=100000):
-        global lock
+        global lock, ready
         t = time()
-        with lock:
-            self.ready = False
         self.limit = limit
+        print('Container using {} limit {}'.format(type(limit), limit))
         self.api = solr.Solr('http://localhost:8983/solr/samos')
         self.wktreg = re.compile(r'[-+]?\d*\.\d+|\d+')
         self.data = None
@@ -60,7 +60,7 @@ class Container(object):
         self.tree = cKDTree(self.data['loc'][:self.total], balanced_tree=False)
         self.loadtime = time() - t
         with lock:
-            self.ready = True
+            ready = True
 
     def _add(self, doc, idx):
         """
@@ -164,8 +164,8 @@ class Container(object):
 
 def init(limit=5000000):
     global container
-    if not container:
-        container = Container(limit=limit)
+    print('Initing container in kd module')
+    container = Container(limit=limit)
 
 if __name__ == '__main__':
     print(Container().stats())

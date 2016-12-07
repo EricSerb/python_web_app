@@ -50,7 +50,6 @@ info.update = function (rec) {
         latlon = rec.loc.split(',');
         lat = parseInt(latlon[0], 10);
         lon = parseInt(latlon[1], 10);
-        map.setView([lat, lon], map.getZoom());
         console.log(rec);
     }
     this._div.innerHTML = '<h3>SAMOS record viewer</h3>' +  (rec ?
