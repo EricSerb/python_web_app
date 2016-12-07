@@ -79,6 +79,16 @@ class Test(unittest.TestCase):
                                             'equal to the limit {}, ' \
                                             'got {}'.format(Test.lim, len(pnts))
 
+    def test_stats(self):
+        assert isinstance(Test.con.stats(), str)
+
+    def test_add(self):
+        idx_0 = {'meta': Test.con.data['meta'][0], 'time': Test.con.data[
+            'time'][0], 'loc': Test.con.data['loc'][0][:]}
+        Test.con._add(idx_0, -1)
+        for key in ['meta', 'time', 'loc']:
+            assert Test.con.data[key][0] == Test.con.data[key][-1]
+
 
 class Test_100(Test):
     Test.con = kd.Container(limit=100)
