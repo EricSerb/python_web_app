@@ -36,8 +36,9 @@ class Test(unittest.TestCase):
                                           len(Test.con.data['time']),
                                           len(Test.con.data['meta']),
                                           len(Test.con.data['loc']))
-        assert Test.con.data['meta'][Test.lim-1], 'Error, Test.con.data["meta"][99] ' \
-                                          'is empty'
+        assert Test.con.data['meta'][Test.lim-1], 'Error, Test.con.data[' \
+                                                  '"meta"][{}] is ' \
+                                                  'empty'.format(Test.lim)
         assert not Test.con.data['meta'][Test.lim], 'Error, Test.con.data["meta"][{}] ' \
                                           'is not empty, Test.contains {}'\
                                           ''.format(Test.lim, Test.con.data['meta'][Test.lim])
@@ -53,7 +54,7 @@ class Test(unittest.TestCase):
                                        'good'.format(anc['thredds'])
 
     def test_convpoint(self):
-        lat_lon = Test.con._.convpoint('50.0440711975, -128.118637085')
+        lat_lon = Test.con._convpoint('50.0440711975, -128.118637085')
         assert isinstance(lat_lon, tuple), 'Error lat_lon should be a tuple, ' \
                                            'but it is {}'.format(type(lat_lon))
         assert lat_lon[0] == -128.118637085, 'Error lat_lon[{}] should be ' \
