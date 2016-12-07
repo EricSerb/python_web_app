@@ -60,20 +60,18 @@ Previously we tested on local host but the server uses an Apache proxy to rerout
 Because of this, we have hard coded various url resources in the index.html file so that they go through the proxy.
 
 ## About
-### OSM
-See [OpenStreetMap](https://www.openstreetmap.org/)
-### DOMS
-See [Distributed Oceanographic Matchup Service](https://doms.jpl.nasa.gov/)
+### OSM [OpenStreetMap](https://www.openstreetmap.org/)
+### DOMS [Distributed Oceanographic Matchup Service](https://doms.jpl.nasa.gov/)
 ### EDGE
-See [The Extensible Data Gateway Environment](https://github.com/dataplumber/edge)
+[The Extensible Data Gateway Environment](https://github.com/dataplumber/edge)
 ### Solr
-See [Apache - Lucene - Solr](https://doms.jpl.nasa.gov/)
+[Apache - Lucene - Solr](https://doms.jpl.nasa.gov/)
 ### SAMOS
-See [Shipboard Automated Meteorological and Oceanographic System](http://samos.coaps.fsu.edu/html/)
+[Shipboard Automated Meteorological and Oceanographic System](http://samos.coaps.fsu.edu/html/)
 ### ICOADS
-See [International Comprehensive Ocean-Atmosphere Data Set](http://icoads.noaa.gov/)
+[International Comprehensive Ocean-Atmosphere Data Set](http://icoads.noaa.gov/)
 ### SPURS
-See [Salinity Processes in the Upper Ocean Regional Study](http://spurs.jpl.nasa.gov/)
+[Salinity Processes in the Upper Ocean Regional Study](http://spurs.jpl.nasa.gov/)
 
 Open Street Maps is a crowd sourced free map of the world. While they have their own webpage with large map data, it provides mainly land based data withg the exception of coast lines. We would like to map out mainly ocean based data, with the eventual addition of satelitte data (both land + ocean). In order to do this, we plan on using the OSM API which will provide us with a base layer of our map. There are certainly other tools to do this, but using OSM provides an extensible set of features that are simple to work with, and will allow us to overlay our own datasets onto this map in conjuction with what OSM provides.
 
