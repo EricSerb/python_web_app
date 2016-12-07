@@ -5,8 +5,15 @@ from operator import or_
 from time import time
 import numpy as np
 from scipy.spatial import cKDTree
-from itertools import permutations, product
+from itertools import product
 from math import sqrt
+import threading
+
+# This module uses a singleton style object for the KD tree.
+# The flask app will check the container until it is ready
+# before sending a client the webpage.
+lock = threading.Lock()
+container = None
 
 # this is a monkey patch I used from solrpy/issues/27
 # it stops next_batch() from overwriting fields
@@ -15,6 +22,15 @@ old_call = solr.core.SearchHandler.__call__
 
 
 def new_call(self, q=None, fields=None, *args, **params):
+    """
+    This call is intended to replace solr.core.SearchHandler.__call__.
+    The reason for this is that a query resonse object will overwrite
+    the fields attribute when calling next_batch(). This degrades
+    performance because Solr begins to send all document elements
+    after the first batch when we only need the few. Thus we fix the
+    function so that we limit the data transfer over the local network
+    to speed up initialization.
+    """
     fields = params.pop('fl', fields)
     return old_call(self, q, fields, *args, **params)
 solr.core.SearchHandler.__call__ = new_call
@@ -27,7 +43,10 @@ class Container(object):
     access the data to return to the client.
     """
     def __init__(self, limit=100000):
+        global lock
         t = time()
+        with lock:
+            self.ready = False
         self.limit = limit
         self.api = solr.Solr('http://localhost:8983/solr/samos')
         self.wktreg = re.compile(r'[-+]?\d*\.\d+|\d+')
@@ -40,6 +59,8 @@ class Container(object):
         # , compact_nodes=False)
         self.tree = cKDTree(self.data['loc'][:self.total], balanced_tree=False)
         self.loadtime = time() - t
+        with lock:
+            self.ready = True
 
     def _add(self, doc, idx):
         """
@@ -140,6 +161,11 @@ class Container(object):
         for r in res:
             doc = r
         return doc
+
+def init(limit=5000000):
+    global container
+    if not container:
+        container = Container(limit=limit)
 
 if __name__ == '__main__':
     print(Container().stats())

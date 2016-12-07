@@ -12,8 +12,8 @@ app = Flask(__name__)
 app.config['DEBUG'] = True
 app.secret_key = os.urandom(32)
 
-# Creating the kd tree from all of number of points that we request from solr
-data = kd.Container(limit=500000)
+ready = False
+
 
 """
 Creating a logger in order to log all of out print statements to a file.
@@ -24,9 +24,29 @@ fmt = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
 fh = logging.FileHandler('server.log')
 fh.setFormatter(fmt)
 log.addHandler(fh)
-log.info(data.stats())
+
+
+def waitready(router):
+    @wraps(router)
+    def rerouter(*args, **kwargs):
+        global ready, log
+        if ready: return router(*args, **kwargs)
+        if not kd.container: return render_template('page_not_found.html')
+        with kd.lock:
+            if kd.container.ready:
+                ready = True
+                log.info(kd.container.stats())
+                return router(*args, **kwargs)
+            else: render_template('page_not_found.html')
+    return update_wrapper(rerouter, router)
 
 def nocache(view):
+    """
+    This is a decorator used to tell flask to tell the client that they should
+    not keep their local files in a cache. In production this would not be
+    turned off, but since our files are changing rapidly during testing and
+    development, we have left this activate.
+    """
     @wraps(view)
     def no_cache(*args, **kwargs):
         response = make_response(view(*args, **kwargs))
@@ -50,6 +70,7 @@ def convlon360(l_360):
 
 
 @app.route('/data', methods=['GET'])
+@waitready
 def dat():
     """
     This method is used to get the points inside of a bounding box.
@@ -63,27 +84,28 @@ def dat():
     def pins(bounds):
         lats = (bounds['S'], bounds['N'])
         lons = tuple(map(convlon360, (bounds['W'], bounds['E'])))
-        idx = data.bbox(lats, lons, k=5000)
-        return jsonify(points=[{'lon': d[0], 'lat': d[1], 'idx': str(i), 'meta': m[:m.find('_')]
-                                }for d, i, m in zip(data.tree.data[idx], idx, data.data['meta'][idx])
+        idx = kd.container.bbox(lats, lons, k=5000)
+        return jsonify(points=[{'lon': d[0], 'lat': d[1], 'meta': m[:m.find('_')]
+                                }for d, m in zip(kd.container.tree.data[idx], kd.container.data['meta'][idx])
                                 if (lons[0] < d[0] < lons[1]) and (lats[0] < d[1] < lats[1])])
 
     def ancillary(idx):
-        return jsonify({key: str(data.data[key][idx])
+        return jsonify({key: str(kd.container.data[key][idx])
                         for key in ('meta', 'time')})
 
 
     if 'idx' in request.args:
         return ancillary(int(request.args['idx']))
     elif 'lat' in request.args and 'lon' in request.args:
-        print(data.ancillary(data.nearest(request.args['lat'], request.args['lon'])))
-        return jsonify(data.ancillary(data.nearest(request.args['lat'], request.args['lon'])))
+        return jsonify(kd.container.ancillary(kd.container.nearest(
+                       request.args['lat'],request.args['lon'])))
     else:
         return pins({card: float(request.args[card])
                     for card in ('S', 'N', 'W', 'E')})
 
 
 @app.route('/', methods=['GET'])
+@waitready
 @nocache
 def index():
     """
@@ -124,3 +146,4 @@ def unittest():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+    kd.init(limit=500000)
